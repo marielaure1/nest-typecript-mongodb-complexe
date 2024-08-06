@@ -1,0 +1,18 @@
+import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
+
+export type {{pascalCase}}Document = {{pascalCase}} & Document;
+
+@Schema({
+	timestamps: true,
+})
+export class {{pascalCase}} {
+
+	// PROPERTIES 
+
+	createdAt?: Date;
+	updatedAt?: Date;
+}
+
+export const {{pascalCase}}Schema = SchemaFactory.createForClass({{pascalCase}});
+

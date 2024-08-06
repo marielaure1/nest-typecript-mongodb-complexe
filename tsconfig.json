@@ -1,0 +1,55 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      /*
+      * Modules
+      */
+      "@modules/*": ["./src/modules/*"],
+      /*
+      * Config
+      */
+      "@config/*": ["./src/config/*"],
+      /*
+      * Jobs
+      */
+      "@jobs/*": ["./src/jobs/*"],
+      /*
+      * Providers
+      */
+      "@providers/*": ["./src/providers/*"],
+      /*
+      * Common
+      */
+      "@constants/*": ["./src/common/constants/*"],
+      "@decorators/*": ["./src/common/decorators/*"],
+      "@dtos/*": ["./src/common/dtos/*"],
+      "@enums/*": ["./src/common/enums/*"],
+      "@exceptions/*": ["./src/common/exceptions/*"],
+      "@guards/*": ["./src/common/guards/*"],
+      "@helpers/*": ["./src/common/helpers/*"],
+      "@interceptors/*": ["./src/common/interceptors/*"],
+      "@interfaces/*": ["./src/common/interfaces/*"],
+      "@middlewares/*": ["./src/common/middlewares/*"],
+      "@pipes/*": ["./src/common/pipes/*"],
+      "@serializers/*": ["./src/common/serializers/*"],
+      "@entities/*": ["./src/common/entities/*"],
+    }, 
+  }
+}
