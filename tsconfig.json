@@ -33,7 +33,7 @@
       /*
       * Providers
       */
-      "@providers/*": ["./src/providers/*"],
+      "@services/*": ["src/services/*"],
       /*
       * Common
       */
@@ -51,5 +51,12 @@
       "@serializers/*": ["./src/common/serializers/*"],
       "@entities/*": ["./src/common/entities/*"],
     }, 
-  }
+  },
+  "include": [
+      "src/**/*.ts",
+      "src/**/*.hbs"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
 }

@@ -13,8 +13,13 @@ import UserRoleEnum from "@enums/user-role.enum";
 export class CreateUserDto {
 	@ApiProperty({ description: "The email of the user" })
 	@IsNotEmpty()
-	@IsEmail()
+	@Matches(Regex.email, { message: 'Email does not match the required pattern' })
 	email: string;
+
+	@ApiProperty({ description: "The phone number of the user" })
+	@IsOptional()
+	@Matches(Regex.phone)
+	phone?: string;
 
 	@ApiProperty({ description: "The password of the user" })
 	@IsNotEmpty()
@@ -27,7 +32,7 @@ export class CreateUserDto {
 	})
 	@IsOptional()
 	@IsEnum(UserStatusEnum)
-	status: UserStatusEnum;
+	status?: UserStatusEnum;
 
 	@ApiPropertyOptional({
 		description: "The role of the user",

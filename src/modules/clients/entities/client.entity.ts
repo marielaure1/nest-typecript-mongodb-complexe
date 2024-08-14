@@ -1,5 +1,5 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 
 export type ClientDocument = Client & Document;
 
@@ -7,8 +7,8 @@ export type ClientDocument = Client & Document;
 	timestamps: true,
 })
 export class Client {
-	@Prop()
-	society?: string;
+	@Prop({ required: true, unique: true })
+	userId: string;
 
 	@Prop({ required: true })
 	lastName: string;
@@ -16,41 +16,29 @@ export class Client {
 	@Prop({ required: true })
 	firstName: string;
 
-	@Prop({ required: true })
-	email: string;
+	@Prop({ default: null })
+	address1?: string;
 
-	@Prop({ required: true })
-	phone: string;
-
-	@Prop({ required: true })
-	address: string;
-
-	@Prop({ required: true })
-	status: string;
+	@Prop({ default: null })
+	address2?: string;
 
 	@Prop()
-	lastContactDate?: Date;
+	postalCode?: string;
+
+	@Prop({ default: null })
+	city?: string;
+
+	@Prop({ default: null })
+	country?: string;
 
 	@Prop()
-	marketSegment?: string;
+	notificationEmail: boolean;
 
 	@Prop()
-	needs?: string;
+	notificationSms: boolean;
 
-	@Prop()
-	leadSource?: string;
-
-	@Prop()
-	companySize?: string;
-
-	@Prop()
-	estimatedBudget?: number;
-
-	@Prop({ required: true })
-	ownerId: string;
-
-	@Prop()
-	customFieldValues?: Array<object>;
+	// @Prop()
+	// customFieldValues?: Array<object>;
 
 	createdAt?: Date;
 	updatedAt?: Date;

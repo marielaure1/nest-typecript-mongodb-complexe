@@ -1,22 +1,12 @@
 import { CustomFieldValueDto } from "@dtos/custom-field-value.dto";
 import { Type } from "class-transformer";
-import {
-	IsNotEmpty,
-	IsEmail,
-	IsString,
-	IsOptional,
-	IsObject,
-	ValidateNested,
-	IsNumber,
-	IsDate,
-} from "class-validator";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsNotEmpty, IsString, IsOptional, IsBoolean } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateClientDto {
-	@ApiPropertyOptional({ description: "The society of the client" })
 	@IsOptional()
 	@IsString()
-	society?: string;
+	userId?: string;
 
 	@ApiProperty({ description: "The first name of the client" })
 	@IsNotEmpty()
@@ -28,69 +18,53 @@ export class CreateClientDto {
 	@IsString()
 	lastName: string;
 
-	@ApiProperty({ description: "The email of the client" })
+	@ApiProperty({ description: "The address1 of the client" })
+	@IsOptional()
+	@IsString()
+	address1?: string;
+
+	@ApiProperty({ description: "The address2 of the client" })
+	@IsOptional()
+	@IsString()
+	address2?: string;
+
+	@ApiProperty({ description: "The postal code of the client" })
+	@IsOptional()
+	@IsString()
+	postalCode?: string;
+
+	@ApiProperty({ description: "The city of the client" })
+	@IsOptional()
+	@IsString()
+	city?: string;
+
+	@ApiProperty({ description: "The country of the client" })
+	@IsOptional()
+	@IsString()
+	country?: string;
+
+	@ApiProperty({ description: "The client want email notifications" })
 	@IsNotEmpty()
-	@IsEmail()
-	email: string;
+	@IsBoolean()
+	notificationEmail: boolean;
 
-	@ApiProperty({ description: "The phone number of the client" })
+	@ApiProperty({ description: "The client want sms notifications" })
 	@IsNotEmpty()
-	@IsString()
-	phone: string;
+	@IsBoolean()
+	notificationSms: boolean;
 
-	@ApiProperty({ description: "The address of the client" })
-	@IsNotEmpty()
-	@IsString()
-	address: string;
+	// @ApiProperty({ description: "The company ID of the Company" })
+	// @IsString()
+	// @IsNotEmpty()
+	// companyId: string;
 
-	@ApiProperty({ description: "The status of the client" })
-	@IsNotEmpty()
-	@IsString()
-	status: string;
-
-	@ApiProperty({ description: "The owner ID of the client" })
-	@IsString()
-	@IsNotEmpty()
-	ownerId: string;
-
-	@ApiPropertyOptional({ description: "The last contact date of the client" })
-	@IsOptional()
-	@IsDate()
-	@Type(() => Date)
-	lastContactDate?: Date;
-
-	@ApiPropertyOptional({ description: "The market segment of the client" })
-	@IsOptional()
-	@IsString()
-	marketSegment?: string;
-
-	@ApiPropertyOptional({ description: "The needs of the client" })
-	@IsOptional()
-	@IsString()
-	needs?: string;
-
-	@ApiPropertyOptional({ description: "The lead source of the client" })
-	@IsOptional()
-	@IsString()
-	leadSource?: string;
-
-	@ApiPropertyOptional({ description: "The company size of the client" })
-	@IsOptional()
-	@IsString()
-	companySize?: string;
-
-	@ApiPropertyOptional({ description: "The estimated budget of the client" })
-	@IsOptional()
-	@IsNumber()
-	estimatedBudget?: number;
-
-	@ApiPropertyOptional({
-		description: "The custom field values of the client",
-		type: CustomFieldValueDto,
-	})
-	@IsOptional()
-	@IsObject()
-	@ValidateNested({ each: true })
-	@Type(() => CustomFieldValueDto)
-	customFieldValues?: CustomFieldValueDto;
+	// @ApiPropertyOptional({
+	// 	description: "The custom field values of the client",
+	// 	type: CustomFieldValueDto,
+	// })
+	// @IsOptional()
+	// @IsObject()
+	// @ValidateNested({ each: true })
+	// @Type(() => CustomFieldValueDto)
+	// customFieldValues?: CustomFieldValueDto;
 }

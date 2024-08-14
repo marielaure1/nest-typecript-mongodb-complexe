@@ -1,0 +1,36 @@
+import {
+	Controller,
+	Get,
+	Post,
+	Body,
+	Param,
+	Delete,
+	Res,
+	Put,
+} from '@nestjs/common';<% if (moduleService) { %>
+import { <%= pascalCase %>sService } from '@modules/<%= kebabCase %>s/<%= kebabCase %>s.service';<% } %><% if (moduleDto) { %>
+import { Create<%= pascalCase %>Dto } from '@modules/<%= kebabCase %>s/dto/create-<%= kebabCase %>.dto';
+import { Update<%= pascalCase %>Dto } from '@modules/<%= kebabCase %>s/dto/update-<%= kebabCase %>.dto';<% } %><% if (moduleEntities) { %>
+import { <%= pascalCase %>Document } from '@modules/<%= kebabCase %>s/entities/<%= kebabCase %>.entity';<% } %><% if (moduleExtends) { %>
+import { AppController } from '@modules/app.controller';<% } %><% if (documentation) { %>
+import {
+	ApiTags,
+	ApiOperation,
+	ApiResponse,
+	ApiBearerAuth,
+} from '@nestjs/swagger';<% } %>
+import { Response } from 'express';
+<% if (documentation) { %>
+@ApiTags('<%= kebabCase %>s')<% } %>
+@Controller('<%= kebabCase %>s')
+export class <%= pascalCase %>sController <% if (moduleExtends) { %>extends AppController<
+	<%= pascalCase %>Document,
+	Create<%= pascalCase %>Dto,
+	Update<%= pascalCase %>Dto
+> <% } %>{
+
+	constructor(<% if (moduleService) { %>private readonly <%= camelCase %>sService: <%= pascalCase %>sService<% } %>) {<% if (moduleExtends) { %>
+		super(<%= camelCase %>sService, '<%= camelCase %>s');
+<% } %>}
+
+}

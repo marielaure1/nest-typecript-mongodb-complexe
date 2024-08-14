@@ -12,6 +12,9 @@ export class User {
 	@Prop({ required: true, unique: true })
 	email: string;
 
+	@Prop({ required: false, unique: true, sparse: true })
+	phone?: string;
+
 	@Prop({ required: true })
 	password: string;
 
@@ -25,12 +28,16 @@ export class User {
 	@Prop({ default: UserRoleEnum.CLIENT, enum: UserRoleEnum })
 	role: UserRoleEnum;
 
-	createdAt?: Date;
-	updatedAt?: Date;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.pre("find", function () {
+const excludePassword = function () {
 	this.select("-password");
-});
+};
+
+UserSchema.pre("find", excludePassword);
+UserSchema.pre("findOne", excludePassword);
+UserSchema.pre("findOneAndUpdate", excludePassword);

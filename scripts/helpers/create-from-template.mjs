@@ -1,13 +1,10 @@
 import fs from "fs";
+import ejs from "ejs";
 
 // Create a file from a template with replacements
-function createFileFromTemplate(templatePath, outputPath, replacements) {
-	let content = fs.readFileSync(templatePath, "utf8");
-
-	for (const [key, value] of Object.entries(replacements)) {
-		content = content.replace(new RegExp(`{{${key}}}`, "g"), value);
-	}
-
+async function createFileFromTemplate(templatePath, outputPath, replacements) {
+	const template = fs.readFileSync(templatePath, "utf8");
+	const content = ejs.render(template, replacements);
 	fs.writeFileSync(outputPath, content);
 }
 

@@ -8,7 +8,7 @@ import {
 import { Reflector } from "@nestjs/core";
 // import { FirebaseService } from '@providers/services/firebase/firebase.service';
 import { UsersService } from "@modules/users/users.service";
-import { CustomersService } from "@modules/customers/customers.service";
+// import { CustomersService } from "@modules/customers/customers.service";
 import RoleEnum from "@enums/user-role.enum";
 import { ROLES_KEY } from "@decorators/roles.decorator";
 import { OWNERSHIP_KEY } from "@decorators/ownership.decorator";
@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest();
 
 		try {
-			// const user = await this.usersService.findOneByFirebaseUid(request["user_supabase"].uid);
+			// const user = await this.usersService.findOneByFirebaseUid(request["request"].uid);
 			// request['user'] = user;
 
 			// const customer = await this.customersService.findOneByUser(user._id);

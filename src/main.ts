@@ -3,14 +3,23 @@ import { AppModule } from "@modules/app.module";
 import settings from "@constants/settings";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import * as bodyParser from "body-parser";
-import * as fs from "fs";
-import * as yaml from "js-yaml";
+import { ValidationPipe } from "@nestjs/common";
+// import * as fs from "fs";
+// import * as yaml from "js-yaml";
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
 	app.enableCors();
 	app.use(bodyParser.json());
+
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+			forbidNonWhitelisted: true,
+			transform: true,
+		}),
+	);
 
 	const config = new DocumentBuilder()
 		.setTitle("Api NOM_DU_PROJET")

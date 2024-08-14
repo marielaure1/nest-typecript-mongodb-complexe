@@ -12,104 +12,98 @@ import {
 import { Document } from "mongoose";
 import { AppService } from "@modules/app.service";
 import { Response } from "express";
-import ResponsesHelper from "@helpers/responses.helpers";
-import { ValidationError } from "class-validator";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { Responses } from "@helpers/responses.helper";
 
-@ApiTags("users")
 @Controller()
 export abstract class AppController<
 	AppModel extends Document,
 	CreateDto,
 	UpdateDto,
 > {
-	private readonly schema: string;
-	public responsesHelper: ResponsesHelper;
-
 	constructor(
 		private readonly service: AppService<AppModel, CreateDto, UpdateDto>,
-		schema: string,
-	) {
-		this.schema = schema;
-		this.responsesHelper = new ResponsesHelper();
-	}
+		private readonly schema: string,
+	) {}
 
 	@Post()
-	@ApiOperation({ summary: "Create a new user" })
-	@ApiResponse({ status: 201, description: "User created" })
 	async create(@Body() createDto: CreateDto, @Res() res: Response) {
+		const path = "create";
+		const method = "Post";
+
 		try {
 			const data = await this.service.create(createDto);
-			return this.responsesHelper.getResponse({
+			return Responses.getResponse({
 				res,
-				path: "create",
-				method: "Post",
-				code: HttpStatus.CREATED,
+				path,
+				method,
+				code: HttpStatus.OK,
 				subject: this.schema,
 				data,
 			});
 		} catch (error) {
-			if (Array.isArray(error) && error[0] instanceof ValidationError) {
-				return this.responsesHelper.getResponse({
+			console.error(
+				`${this.schema.toUpperCase()}Controller > ${path} : `,
+				error,
+			);
+			if (error.message === "Not Found") {
+				return Responses.getResponse({
 					res,
-					path: "create",
-					method: "Post",
+					path,
+					method,
 					code: HttpStatus.UNPROCESSABLE_ENTITY,
 					subject: this.schema,
-					data: error,
-					message: "Validation errors occurred",
+					error: error.message,
 				});
 			} else {
-				console.error("AppController > create : ", error);
-				return this.responsesHelper.getResponse({
+				return Responses.getResponse({
 					res,
-					path: "create",
-					method: "Post",
+					path,
+					method,
 					code: HttpStatus.INTERNAL_SERVER_ERROR,
 					subject: this.schema,
-					data: error.message,
-					message: "An internal server error occurred",
+					error: `An error occured while creating the ${this.schema}`,
 				});
 			}
 		}
 	}
 
 	@Get()
-	@ApiOperation({ summary: "Get all users" })
-	@ApiResponse({ status: 200, description: "Return all users" })
 	async findAll(@Res() res: Response) {
+		const path = "findAll";
+		const method = "Get";
+
 		try {
 			const data = await this.service.findAll();
-			if (!data || data.length === 0) {
-				throw new Error("Not Found");
-			}
-			return this.responsesHelper.getResponse({
+			return Responses.getResponse({
 				res,
-				path: "findAll",
-				method: "Get",
+				path,
+				method,
 				code: HttpStatus.OK,
 				subject: this.schema,
 				data,
 			});
 		} catch (error) {
+			console.error(
+				`${this.schema.toUpperCase()}Controller > ${path} : `,
+				error,
+			);
 			if (error.message === "Not Found") {
-				return this.responsesHelper.getResponse({
+				return Responses.getResponse({
 					res,
-					path: "findAll",
-					method: "Get",
+					path,
+					method,
 					code: HttpStatus.NOT_FOUND,
 					subject: this.schema,
-					data: error.message,
+					error: error.message,
 				});
 			} else {
-				console.error("AppController > findAll : ", error);
-				return this.responsesHelper.getResponse({
+				return Responses.getResponse({
 					res,
-					path: "findAll",
-					method: "Get",
+					path,
+					method,
 					code: HttpStatus.INTERNAL_SERVER_ERROR,
 					subject: this.schema,
-					data: error.message,
+					error: `An error occured while creating the ${this.schema}`,
 				});
 			}
 		}
@@ -117,38 +111,41 @@ export abstract class AppController<
 
 	@Get(":id")
 	async findOne(@Param("id") id: string, @Res() res: Response) {
+		const path = "findOne";
+		const method = "Get";
+
 		try {
 			const data = await this.service.findOne(id);
-			if (!data) {
-				throw new Error("Not Found");
-			}
-			return this.responsesHelper.getResponse({
+			return Responses.getResponse({
 				res,
-				path: "findOne",
-				method: "Get",
+				path,
+				method,
 				code: HttpStatus.OK,
 				subject: this.schema,
 				data,
 			});
 		} catch (error) {
+			console.error(
+				`${this.schema.toUpperCase()}Controller > ${path} : `,
+				error,
+			);
 			if (error.message === "Not Found") {
-				return this.responsesHelper.getResponse({
+				return Responses.getResponse({
 					res,
-					path: "findOne",
-					method: "Get",
+					path,
+					method,
 					code: HttpStatus.NOT_FOUND,
 					subject: this.schema,
-					data: error.message,
+					error: error.message,
 				});
 			} else {
-				console.error("AppController > findOne : ", error);
-				return this.responsesHelper.getResponse({
+				return Responses.getResponse({
 					res,
-					path: "findOne",
-					method: "Get",
+					path,
+					method,
 					code: HttpStatus.INTERNAL_SERVER_ERROR,
 					subject: this.schema,
-					data: error.message,
+					error: `An error occured while creating the ${this.schema}`,
 				});
 			}
 		}
@@ -160,53 +157,41 @@ export abstract class AppController<
 		@Body() updateDto: UpdateDto,
 		@Res() res: Response,
 	) {
+		const path = "update";
+		const method = "Put";
+
 		try {
 			const data = await this.service.update(id, updateDto);
-			if (!data) {
-				throw new Error("Not Found");
-			}
-			return this.responsesHelper.getResponse({
+			return Responses.getResponse({
 				res,
-				path: "update",
-				method: "Put",
+				path,
+				method,
 				code: HttpStatus.OK,
 				subject: this.schema,
 				data,
-				message: "clients update with success",
 			});
 		} catch (error) {
-			console.log(error);
-
-			if (Array.isArray(error) && error[0] instanceof ValidationError) {
-				return this.responsesHelper.getResponse({
+			console.error(
+				`${this.schema.toUpperCase()}Controller > ${path} : `,
+				error,
+			);
+			if (error.message === "Not Found") {
+				return Responses.getResponse({
 					res,
-					path: "update",
-					method: "Put",
-					code: HttpStatus.UNPROCESSABLE_ENTITY,
-					subject: this.schema,
-					data: error,
-					message: "Validation errors occurred",
-				});
-			} else if (error.message === "Not Found") {
-				return this.responsesHelper.getResponse({
-					res,
-					path: "update",
-					method: "Put",
+					path,
+					method,
 					code: HttpStatus.NOT_FOUND,
 					subject: this.schema,
-					data: error.message,
-					message: "clients not found",
+					error: error.message,
 				});
 			} else {
-				console.error("AppController > update : ", error);
-				return this.responsesHelper.getResponse({
+				return Responses.getResponse({
 					res,
-					path: "update",
-					method: "Put",
+					path,
+					method,
 					code: HttpStatus.INTERNAL_SERVER_ERROR,
 					subject: this.schema,
-					data: error.message,
-					message: "clients internal server error",
+					error: `An error occured while creating the ${this.schema}`,
 				});
 			}
 		}
@@ -214,39 +199,42 @@ export abstract class AppController<
 
 	@Delete(":id")
 	async remove(@Param("id") id: string, @Res() res: Response) {
+		const path = "remove";
+		const method = "Delete";
+
 		try {
-			const isFind = await this.service.findOne(id);
-			if (!isFind) {
-				return this.responsesHelper.getResponse({
-					res,
-					path: "remove",
-					method: "Delete",
-					code: HttpStatus.NOT_FOUND,
-					subject: this.schema,
-					data: {},
-				});
-			}
-
 			await this.service.remove(id);
-
-			return this.responsesHelper.getResponse({
+			return Responses.getResponse({
 				res,
-				path: "remove",
-				method: "Delete",
-				code: HttpStatus.OK,
+				path,
+				method,
+				code: HttpStatus.NO_CONTENT,
 				subject: this.schema,
-				data: { removed: true },
 			});
 		} catch (error) {
-			console.error("AppController > remove : ", error);
-			return this.responsesHelper.getResponse({
-				res,
-				path: "remove",
-				method: "Delete",
-				code: HttpStatus.INTERNAL_SERVER_ERROR,
-				subject: this.schema,
-				data: error.message,
-			});
+			console.error(
+				`${this.schema.toUpperCase()}Controller > ${path} : `,
+				error,
+			);
+			if (error.message === "Not Found") {
+				return Responses.getResponse({
+					res,
+					path,
+					method,
+					code: HttpStatus.NOT_FOUND,
+					subject: this.schema,
+					error: error.message,
+				});
+			} else {
+				return Responses.getResponse({
+					res,
+					path,
+					method,
+					code: HttpStatus.INTERNAL_SERVER_ERROR,
+					subject: this.schema,
+					error: `An error occured while creating the ${this.schema}`,
+				});
+			}
 		}
 	}
 }

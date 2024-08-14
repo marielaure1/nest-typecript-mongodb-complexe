@@ -7,7 +7,6 @@ module.exports = {
       '^@services/(.*)$': '<rootDir>/src/services/$1',
       '^@config/(.*)$': '<rootDir>/src/config/$1',
       '^@jobs/(.*)$': '<rootDir>/src/jobs/$1',
-      '^@providers/(.*)$': '<rootDir>/src/providers/$1',
       '^@constants/(.*)$': '<rootDir>/src/common/constants/$1',
       '^@decorators/(.*)$': '<rootDir>/src/common/decorators/$1',
       '^@dtos/(.*)$': '<rootDir>/src/common/dtos/$1',

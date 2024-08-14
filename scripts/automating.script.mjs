@@ -56,26 +56,26 @@ const moduleBasicQuestions = [
 	},
 	{
 		type: "confirm",
-		name: "moduleController",
-		message: "Do you need a controller?",
-		default: false,
-	},
-	{
-		type: "confirm",
 		name: "moduleService",
 		message: "Do you need a service?",
 		default: false,
 	},
 	{
 		type: "confirm",
-		name: "moduleDto",
-		message: "Do you need DTOs?",
+		name: "moduleEntities",
+		message: "Do you need entities?",
 		default: false,
 	},
 	{
 		type: "confirm",
-		name: "moduleEntities",
-		message: "Do you need entities?",
+		name: "authMiddleware",
+		message: "Do you want to use the authMiddeware?",
+		default: true,
+	},
+	{
+		type: "confirm",
+		name: "moduleDocumentation",
+		message: "Do you need a swagger documentation?",
 		default: false,
 	},
 ];
@@ -86,6 +86,18 @@ const moduleCrudQuestions = [
 		type: "input",
 		name: "moduleName",
 		message: "What is the name of the module?",
+	},
+	{
+		type: "confirm",
+		name: "authMiddleware",
+		message: "Do you want to use the authMiddeware?",
+		default: true,
+	},
+	{
+		type: "confirm",
+		name: "moduleDocumentation",
+		message: "Do you need a swagger documentation?",
+		default: false,
 	},
 ];
 
@@ -135,6 +147,9 @@ async function main() {
 		moduleDir = join(modulesPath, directoryName);
 
 		variables = {
+			moduleExtends: true,
+			documentation: true,
+			authMiddleware: specificAnswers.authMiddleware,
 			kebabCase: normalizedName,
 			pascalCase: toPascalCase(name),
 			camelCase: toCamelCase(name),
@@ -144,11 +159,28 @@ async function main() {
 			fs.mkdirSync(moduleDir, { recursive: true });
 
 			if (generationType === "module-basic") {
-				if (specificAnswers.moduleController) generateController();
+				variables = {
+					...variables,
+					moduleExtends: false,
+					documentation: specificAnswers.moduleDocumentation,
+					moduleController: true,
+					moduleService: specificAnswers.moduleService,
+					moduleDto: true,
+					moduleEntities: specificAnswers.moduleEntities,
+				};
+				generateModule();
+				generateController();
+				generateDto();
 				if (specificAnswers.moduleService) generateService();
-				if (specificAnswers.moduleDto) generateDto();
 				if (specificAnswers.moduleEntities) generateEntities();
 			} else if (generationType === "module-crud") {
+				variables = {
+					...variables,
+					moduleController: true,
+					moduleService: true,
+					moduleDto: true,
+					moduleEntities: true,
+				};
 				generateModule();
 				if (specificAnswers.moduleController) generateController();
 				if (specificAnswers.moduleService) generateService();
@@ -171,7 +203,7 @@ main();
 
 const generateModule = () => {
 	createFileFromTemplate(
-		join(templatesPath, "module.template.mjs"),
+		join(templatesPath, "module.template.ejs"),
 		join(moduleDir, `${variables.kebabCase}s.module.ts`),
 		variables,
 	);
@@ -179,12 +211,12 @@ const generateModule = () => {
 
 const generateController = () => {
 	createFileFromTemplate(
-		join(templatesPath, "controller.template.mjs"),
+		join(templatesPath, "controller.template.ejs"),
 		join(moduleDir, `${variables.kebabCase}s.controller.ts`),
 		variables,
 	);
 	createFileFromTemplate(
-		join(templatesPath, "controller-spect.template.mjs"),
+		join(templatesPath, "controller-spect.template.ejs"),
 		join(moduleDir, `${variables.kebabCase}s.controller.spect.ts`),
 		variables,
 	);
@@ -192,12 +224,12 @@ const generateController = () => {
 
 const generateService = () => {
 	createFileFromTemplate(
-		join(templatesPath, "service.template.mjs"),
+		join(templatesPath, "service.template.ejs"),
 		join(moduleDir, `${variables.kebabCase}s.service.ts`),
 		variables,
 	);
 	createFileFromTemplate(
-		join(templatesPath, "service-spect.template.mjs"),
+		join(templatesPath, "service-spect.template.ejs"),
 		join(moduleDir, `${variables.kebabCase}s.service.spect.ts`),
 		variables,
 	);
@@ -209,12 +241,12 @@ const generateDto = () => {
 	}
 
 	createFileFromTemplate(
-		join(templatesPath, "create-dto.template.mjs"),
+		join(templatesPath, "create-dto.template.ejs"),
 		join(moduleDir, `dto/create-${variables.kebabCase}.dto.ts`),
 		variables,
 	);
 	createFileFromTemplate(
-		join(templatesPath, "update-dto.template.mjs"),
+		join(templatesPath, "update-dto.template.ejs"),
 		join(moduleDir, `dto/update-${variables.kebabCase}.dto.ts`),
 		variables,
 	);
@@ -226,7 +258,7 @@ const generateEntities = () => {
 	}
 
 	createFileFromTemplate(
-		join(templatesPath, "entity.template.mjs"),
+		join(templatesPath, "entity.template.ejs"),
 		join(moduleDir, `entities/${variables.kebabCase}.entity.ts`),
 		variables,
 	);

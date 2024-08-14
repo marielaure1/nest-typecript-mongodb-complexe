@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
 import { Model, Document } from "mongoose";
 
 @Injectable()
@@ -9,7 +8,7 @@ export abstract class AppService<
 	UpdateDto,
 > {
 	constructor(
-		@InjectModel("AppModelName") private readonly appModel: Model<AppModel>,
+		protected readonly appModel: Model<AppModel>,
 		private readonly populate: Array<string> = [],
 	) {}
 
@@ -33,8 +32,6 @@ export abstract class AppService<
 	}
 
 	async findOne(id: string): Promise<AppModel> {
-		console.log("FIND ONE");
-
 		const model = await this.appModel
 			.findById(id)
 			.populate(this.populate)
