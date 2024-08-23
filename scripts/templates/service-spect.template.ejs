@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";<% if (moduleController) { %>
-import { <%= pascalCase %>sController } from "@modules/<%= kebabCase %>s.controller";<% } %>
-import { <%= pascalCase %>sService } from "@modules/<%= kebabCase %>s.service";
+import { <%= pascalCase %>sController } from "@modules/<%= kebabCase %>s/<%= kebabCase %>s.controller";<% } %>
+import { <%= pascalCase %>sService } from "@modules/<%= kebabCase %>s/<%= kebabCase %>s.service";
 
 describe("<%= pascalCase %>sService", () => {<% if (moduleController) { %>
 	let controller: <%= pascalCase %>sController;

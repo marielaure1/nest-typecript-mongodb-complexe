@@ -2,7 +2,7 @@
 import { Module, Global } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 // import { ConfigModule, ConfigService } from "@nestjs/config";
-import settings from "@constants/settings";
+import { settings } from "@constants/settings";
 
 // MODULES
 import { Client, ClientSchema } from "@modules/clients/entities/client.entity";
@@ -25,22 +25,24 @@ import { Client, ClientSchema } from "@modules/clients/entities/client.entity";
 // 	SubscriptionSchema,
 // } from "@modules/subscriptions/entities/subscription.entity";
 import { User, UserSchema } from "@modules/users/entities/user.entity";
+import { Log, LogSchema } from "@modules/logs/entities/log.entity";
 
 @Global()
 @Module({
 	imports: [
 		MongooseModule.forRoot(settings.MONGODB_URL),
 		MongooseModule.forFeature([
+			{ name: User.name, schema: UserSchema },
 			{ name: Client.name, schema: ClientSchema },
+			{ name: Log.name, schema: LogSchema },
 			// { name: CustomField.name, schema: CustomFieldSchema },
 			// { name: Customer.name, schema: CustomerSchema },
 			// // { name: Notification.name, schema: NotificationSchema },
 			// { name: Payment.name, schema: PaymentSchema },
 			// { name: Plan.name, schema: PlanSchema },
 			// { name: Subscription.name, schema: SubscriptionSchema },
-			{ name: User.name, schema: UserSchema },
 		]),
 	],
 	exports: [MongooseModule],
 })
-export class DatabaseModule {}
+export class MongooseConfig {}

@@ -81,8 +81,6 @@ describe("ClientsController", () => {
 		const dto: CreateClientDto = {
 			firstName: "John",
 			lastName: "Doe",
-			email: "john.doe@example.com",
-			phone: "+1234567890",
 			address: "123 Main St",
 			status: "active",
 			ownerId: "ownerId1",

@@ -76,7 +76,7 @@ const moduleBasicQuestions = [
 		type: "confirm",
 		name: "moduleDocumentation",
 		message: "Do you need a swagger documentation?",
-		default: false,
+		default: true,
 	},
 ];
 
@@ -97,7 +97,7 @@ const moduleCrudQuestions = [
 		type: "confirm",
 		name: "moduleDocumentation",
 		message: "Do you need a swagger documentation?",
-		default: false,
+		default: true,
 	},
 ];
 
@@ -182,10 +182,10 @@ async function main() {
 					moduleEntities: true,
 				};
 				generateModule();
-				if (specificAnswers.moduleController) generateController();
-				if (specificAnswers.moduleService) generateService();
-				if (specificAnswers.moduleDto) generateDto();
-				if (specificAnswers.moduleEntities) generateEntities();
+				generateController();
+				generateService();
+				generateDto();
+				generateEntities();
 			}
 
 			console.log(`Successfully generated ${generationType}.`);

@@ -1,37 +1,37 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { <%= pascalCase %>sController } from "@modules/<%= kebabCase %>s/<%= kebabCase %>s.controller";<% if (moduleService) { %>
-import { <%= pascalCase %>sService } from "@modules/<%= kebabCase %>s/<%= kebabCase %>s.service";<% } %><% if (moduleDto) { %>
-import { Create<%= pascalCase %>Dto } from "@modules/<%= kebabCase %>s/dto/create-<%= kebabCase %>.dto";
-import { Update<%= pascalCase %>Dto } from "@modules/<%= kebabCase %>s/dto/update-<%= kebabCase %>.dto";<% } %>
+import { OrganizationsController } from "@modules/organizations/organizations.controller";
+import { OrganizationsService } from "@modules/organizations/organizations.service";
+import { CreateOrganizationDto } from "@modules/organizations/dto/create-organization.dto";
+import { UpdateOrganizationDto } from "@modules/organizations/dto/update-organization.dto";
 import { Response } from "express";
 import { ValidationError } from "class-validator";
 
-describe("<%= pascalCase %>sController", () => {
-	let controller: <%= pascalCase %>sController;<% if (moduleExtends) { %>
-	let service: <%= pascalCase %>sService;
+describe("OrganizationsController", () => {
+	let controller: OrganizationsController;
+	let service: OrganizationsService;
 
-	const mock<%= pascalCase %> = {
+	const mockOrganization = {
 		_id: "1",
 	};
 
-	const mock<%= pascalCase %>sService = {
+	const mockOrganizationsService = {
 		create: jest
 			.fn()
-			.mockImplementation((dto: Create<%= pascalCase %>Dto) =>
+			.mockImplementation((dto: CreateOrganizationDto) =>
 				Promise.resolve({ _id: "1", ...dto }),
 			),
-		findAll: jest.fn().mockResolvedValue([mock<%= pascalCase %>]),
+		findAll: jest.fn().mockResolvedValue([mockOrganization]),
 		findOne: jest
 			.fn()
 			.mockImplementation((id: string) =>
-				Promise.resolve({ _id: id, ...mock<%= pascalCase %> }),
+				Promise.resolve({ _id: id, ...mockOrganization }),
 			),
 		update: jest
 			.fn()
-			.mockImplementation((id: string, dto: Update<%= pascalCase %>Dto) =>
+			.mockImplementation((id: string, dto: UpdateOrganizationDto) =>
 				Promise.resolve({ _id: id, ...dto }),
 			),
-		remove: jest.fn().mockResolvedValue({ _id: "1", ...mock<%= pascalCase %> }),
+		remove: jest.fn().mockResolvedValue({ _id: "1", ...mockOrganization }),
 	};
 
 	function mockResponse(): Partial<Response> {
@@ -52,19 +52,19 @@ describe("<%= pascalCase %>sController", () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			controllers: [<%= pascalCase %>sController],
+			controllers: [OrganizationsController],
 			providers: [
 				{
-					provide: <%= pascalCase %>sService,
-					useValue: mock<%= pascalCase %>sService,
+					provide: OrganizationsService,
+					useValue: mockOrganizationsService,
 				},
 			],
 		}).compile();
 
-		controller = module.get<<%= pascalCase %>sController>(
-			<%= pascalCase %>sController,
+		controller = module.get<OrganizationsController>(
+			OrganizationsController,
 		);
-		service = module.get<<%= pascalCase %>sService>(<%= pascalCase %>sService);
+		service = module.get<OrganizationsService>(OrganizationsService);
 	});
 
 	it("should be defined", () => {
@@ -74,8 +74,8 @@ describe("<%= pascalCase %>sController", () => {
 	/*
 	 * Create
 	 */
-	it("Create [201] - should create a <%= camelCase %>", async () => {
-		const dto: Create<%= pascalCase %>Dto = {};
+	it("Create [201] - should create a organization", async () => {
+		const dto: CreateOrganizationDto = {};
 
 		const res = mockResponse() as Response;
 
@@ -84,15 +84,15 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(201);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 201,
-			datas: { <%= camelCase %>s: { _id: "1", ...dto } },
-			message: "<%= camelCase %>s create with success",
+			datas: { organizations: { _id: "1", ...dto } },
+			message: "organizations create with success",
 			success: true,
 		});
 		expect(service.create).toHaveBeenCalledWith(dto);
 	});
 
-	it("Create [422] - should handle validation errors when creating a <%= camelCase %>", async () => {
-		const dto: Create<%= pascalCase %>Dto = {};
+	it("Create [422] - should handle validation errors when creating a organization", async () => {
+		const dto: CreateOrganizationDto = {};
 
 		const validationError = new ValidationError();
 		validationError.property = "PROPERTY";
@@ -107,15 +107,15 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(422);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 422,
-			datas: { <%= camelCase %>s: [validationError] },
+			datas: { organizations: [validationError] },
 			message: "Validation errors occurred",
 			success: false,
 		});
 		expect(service.create).toHaveBeenCalledWith(dto);
 	});
 
-	it("Create [500] - should handle internal server errors when creating a <%= camelCase %>", async () => {
-		const dto: Create<%= pascalCase %>Dto = {};
+	it("Create [500] - should handle internal server errors when creating a organization", async () => {
+		const dto: CreateOrganizationDto = {};
 
 		jest.spyOn(service, "create").mockRejectedValueOnce(
 			new Error("Internal server error"),
@@ -128,7 +128,7 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
-			datas: { <%= camelCase %>s: "Internal server error" },
+			datas: { organizations: "Internal server error" },
 			message: "An internal server error occurred",
 			success: false,
 		});
@@ -138,7 +138,7 @@ describe("<%= pascalCase %>sController", () => {
 	/*
 	 * FindAll
 	 */
-	it("FindAll [200] - should return all <%= camelCase %>s", async () => {
+	it("FindAll [200] - should return all organizations", async () => {
 		const res = mockResponse() as Response;
 
 		await controller.findAll(res);
@@ -146,14 +146,14 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 200,
-			datas: { <%= camelCase %>s: [mock<%= pascalCase %>] },
-			message: "<%= camelCase %>s retrieve with success",
+			datas: { organizations: [mockOrganization] },
+			message: "organizations retrieve with success",
 			success: true,
 		});
 		expect(service.findAll).toHaveBeenCalled();
 	});
 
-	it("FindAll [404] - should handle not found error when returning all <%= camelCase %>s", async () => {
+	it("FindAll [404] - should handle not found error when returning all organizations", async () => {
 		jest.spyOn(service, "findAll").mockResolvedValueOnce([]);
 
 		const res = mockResponse() as Response;
@@ -163,14 +163,14 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 404,
-			datas: { <%= camelCase %>s: "Not Found" },
-			message: "<%= camelCase %>s not found",
+			datas: { organizations: "Not Found" },
+			message: "organizations not found",
 			success: false,
 		});
 		expect(service.findAll).toHaveBeenCalled();
 	});
 
-	it("FindAll [500] - should handle internal server errors when returning all <%= camelCase %>s", async () => {
+	it("FindAll [500] - should handle internal server errors when returning all organizations", async () => {
 		jest.spyOn(service, "findAll").mockRejectedValueOnce(
 			new Error("Internal server error"),
 		);
@@ -182,8 +182,8 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
-			datas: { <%= camelCase %>s: "Internal server error" },
-			message: "<%= camelCase %>s internal server error",
+			datas: { organizations: "Internal server error" },
+			message: "organizations internal server error",
 			success: false,
 		});
 		expect(service.findAll).toHaveBeenCalled();
@@ -192,7 +192,7 @@ describe("<%= pascalCase %>sController", () => {
 	/*
 	 * FindOne
 	 */
-	it("FindOne [200] - should return a single <%= camelCase %> by id", async () => {
+	it("FindOne [200] - should return a single organization by id", async () => {
 		const res = mockResponse() as Response;
 
 		await controller.findOne("1", res);
@@ -200,14 +200,14 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 200,
-			datas: { <%= camelCase %>s: { _id: "1", ...mock<%= pascalCase %> } },
-			message: "<%= camelCase %>s retrieve with success",
+			datas: { organizations: { _id: "1", ...mockOrganization } },
+			message: "organizations retrieve with success",
 			success: true,
 		});
 		expect(service.findOne).toHaveBeenCalledWith("1");
 	});
 
-	it("FindOne [404] - should handle not found error when returning a single <%= camelCase %> by id", async () => {
+	it("FindOne [404] - should handle not found error when returning a single organization by id", async () => {
 		jest.spyOn(service, "findOne").mockResolvedValueOnce(null);
 
 		const res = mockResponse() as Response;
@@ -217,14 +217,14 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 404,
-			datas: { <%= camelCase %>s: "Not Found" },
-			message: "<%= camelCase %>s not found",
+			datas: { organizations: "Not Found" },
+			message: "organizations not found",
 			success: false,
 		});
 		expect(service.findOne).toHaveBeenCalledWith("1");
 	});
 
-	it("FindOne [500] - should handle internal server errors when returning a single <%= camelCase %> by id", async () => {
+	it("FindOne [500] - should handle internal server errors when returning a single organization by id", async () => {
 		jest.spyOn(service, "findOne").mockRejectedValueOnce(
 			new Error("Internal server error"),
 		);
@@ -236,8 +236,8 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
-			datas: { <%= camelCase %>s: "Internal server error" },
-			message: "<%= camelCase %>s internal server error",
+			datas: { organizations: "Internal server error" },
+			message: "organizations internal server error",
 			success: false,
 		});
 		expect(service.findOne).toHaveBeenCalledWith("1");
@@ -246,8 +246,8 @@ describe("<%= pascalCase %>sController", () => {
 	/*
 	 * Update
 	 */
-	it("Update [404] - should handle not found error when updating a <%= camelCase %> by id", async () => {
-		const dto: Update<%= pascalCase %>Dto = { PROPERTY: "VALUE" };
+	it("Update [404] - should handle not found error when updating a organization by id", async () => {
+		const dto: UpdateOrganizationDto = { PROPERTY: "VALUE" };
 
 		jest.spyOn(service, "update").mockResolvedValueOnce(null);
 
@@ -258,15 +258,15 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 404,
-			datas: { <%= camelCase %>s: "Not Found" },
-			message: "<%= camelCase %>s not found",
+			datas: { organizations: "Not Found" },
+			message: "organizations not found",
 			success: false,
 		});
 		expect(service.update).toHaveBeenCalledWith("1", dto);
 	});
 
-	it("Update [500] - should handle internal server errors when updating a <%= camelCase %> by id", async () => {
-		const dto: Update<%= pascalCase %>Dto = { PROPERTY: "VALUE" };
+	it("Update [500] - should handle internal server errors when updating a organization by id", async () => {
+		const dto: UpdateOrganizationDto = { PROPERTY: "VALUE" };
 
 		jest.spyOn(service, "update").mockRejectedValueOnce(
 			new Error("Internal server error"),
@@ -279,15 +279,15 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
-			datas: { <%= camelCase %>s: "Internal server error" },
-			message: "<%= camelCase %>s internal server error",
+			datas: { organizations: "Internal server error" },
+			message: "organizations internal server error",
 			success: false,
 		});
 		expect(service.update).toHaveBeenCalledWith("1", dto);
 	});
 
-	it("Update [422] - should handle validation errors when updating a <%= camelCase %> by id", async () => {
-		const dto: Update<%= pascalCase %>Dto = { PROPERTY: "VALUE" };
+	it("Update [422] - should handle validation errors when updating a organization by id", async () => {
+		const dto: UpdateOrganizationDto = { PROPERTY: "VALUE" };
 
 		const validationError = new ValidationError();
 		validationError.property = "PROPERTY";
@@ -304,7 +304,7 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(422);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 422,
-			datas: { <%= camelCase %>s: [validationError] },
+			datas: { organizations: [validationError] },
 			message: "Validation errors occurred",
 			success: false,
 		});
@@ -314,7 +314,7 @@ describe("<%= pascalCase %>sController", () => {
 	/*
 	 * Delete
 	 */
-	it("Delete [200] - should delete a <%= camelCase %> by id", async () => {
+	it("Delete [200] - should delete a organization by id", async () => {
 		const res = mockResponse() as Response;
 
 		await controller.remove("1", res);
@@ -322,14 +322,14 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 200,
-			datas: { <%= camelCase %>s: { removed: true } },
-			message: "<%= camelCase %>s delete with success",
+			datas: { organizations: { removed: true } },
+			message: "organizations delete with success",
 			success: true,
 		});
 		expect(service.remove).toHaveBeenCalledWith("1");
 	});
 
-	it("Delete [404] - should handle not found error when deleting a <%= camelCase %> by id", async () => {
+	it("Delete [404] - should handle not found error when deleting a organization by id", async () => {
 		jest.spyOn(service, "findOne").mockResolvedValueOnce(null);
 
 		const res = mockResponse() as Response;
@@ -339,14 +339,14 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 404,
-			datas: { <%= camelCase %>s: {} },
-			message: "<%= camelCase %>s not found",
+			datas: { organizations: {} },
+			message: "organizations not found",
 			success: false,
 		});
 		expect(service.findOne).toHaveBeenCalledWith("1");
 	});
 
-	it("Delete [500] - should handle internal server errors when deleting a <%= camelCase %> by id", async () => {
+	it("Delete [500] - should handle internal server errors when deleting a organization by id", async () => {
 		jest.spyOn(service, "remove").mockRejectedValueOnce(
 			new Error("Internal server error"),
 		);
@@ -358,10 +358,10 @@ describe("<%= pascalCase %>sController", () => {
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
-			datas: { <%= camelCase %>s: "Internal server error" },
-			message: "<%= camelCase %>s internal server error",
+			datas: { organizations: "Internal server error" },
+			message: "organizations internal server error",
 			success: false,
 		});
 		expect(service.remove).toHaveBeenCalledWith("1");
-	});<% } %>
+	});
 });

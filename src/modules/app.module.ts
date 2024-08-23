@@ -8,10 +8,10 @@ import {
 // import { AppService } from "@modules/app.service";
 // import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigModule } from "@nestjs/config";
-import { DatabaseModule } from "@config/database/mongoose/mongoose.module";
-import { MailModule } from "@config/mail/mail.module";
+import { MongooseConfig } from "@config/database/mongoose.config";
+import { MailModule } from "@services/mail/mail.module";
 // import { StripeModule } from "@providers/services/stripe/stripe.module";
-import settings from "@constants/settings";
+import { settings } from "@constants/settings";
 
 // MODULES
 import { ClientsModule } from "@modules/clients/clients.module";
@@ -23,7 +23,10 @@ import { ClientsModule } from "@modules/clients/clients.module";
 // import { SubscriptionsModule } from "@modules/subscriptions/subscriptions.module";
 import { UsersModule } from "@modules/users/users.module";
 import { AuthModule } from "@modules/auth/auth.module";
-import { JwtModule } from "@config/session/jwt.module";
+import { LogsModule } from "@modules/logs/logs.module";
+import { ThrottlerConfig } from "@config/security/throttler.config";
+// import { APP_GUARD } from "@nestjs/core";
+// import { ThrottlerBehindProxyGuard } from "@guards/throttler-behind-proxy.guard";
 
 @Global()
 @Module({
@@ -32,11 +35,13 @@ import { JwtModule } from "@config/session/jwt.module";
 			isGlobal: true,
 			envFilePath: ".env",
 		}),
-		DatabaseModule,
+		MongooseConfig,
 		MailModule,
-		AuthModule,
-		JwtModule,
+		ThrottlerConfig,
 		// StripeModule,
+		LogsModule,
+		AuthModule,
+		UsersModule,
 		ClientsModule,
 		// CustomFieldsModule,
 		// CustomersModule,
@@ -44,10 +49,14 @@ import { JwtModule } from "@config/session/jwt.module";
 		// PaymentsModule,
 		// PlansModule,
 		// SubscriptionsModule,
-		UsersModule,
 	],
 	controllers: [],
-	providers: [],
+	providers: [
+		// {
+		// 	provide: APP_GUARD,
+		// 	useClass: ThrottlerBehindProxyGuard,
+		// },
+	],
 	exports: [AppModule],
 })
 export class AppModule {}

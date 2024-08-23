@@ -14,11 +14,7 @@ export abstract class AppService<
 
 	async create(createDto: CreateDto): Promise<AppModel> {
 		try {
-			const createdModel = new this.appModel({
-				...createDto,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			});
+			const createdModel = new this.appModel(createDto);
 			await createdModel.save();
 			return this.populateModel(createdModel);
 		} catch (error) {
@@ -59,14 +55,20 @@ export abstract class AppService<
 	async findWhere({
 		where,
 		sort,
+		limit,
+		find,
 	}: {
 		where: object;
 		sort?: string;
+		limit?: number;
+		find?: string;
 	}): Promise<AppModel[]> {
 		return await this.appModel
 			.find(where)
 			.sort(sort)
 			.populate(this.populate)
+			.limit(limit)
+			.select(find)
 			.exec();
 	}
 

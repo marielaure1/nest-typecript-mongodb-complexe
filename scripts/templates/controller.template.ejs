@@ -1,12 +1,5 @@
 import {
 	Controller,
-	Get,
-	Post,
-	Body,
-	Param,
-	Delete,
-	Res,
-	Put,
 } from '@nestjs/common';<% if (moduleService) { %>
 import { <%= pascalCase %>sService } from '@modules/<%= kebabCase %>s/<%= kebabCase %>s.service';<% } %><% if (moduleDto) { %>
 import { Create<%= pascalCase %>Dto } from '@modules/<%= kebabCase %>s/dto/create-<%= kebabCase %>.dto';

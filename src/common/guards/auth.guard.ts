@@ -9,7 +9,7 @@ import { Reflector } from "@nestjs/core";
 // import { FirebaseService } from '@providers/services/firebase/firebase.service';
 import { UsersService } from "@modules/users/users.service";
 // import { CustomersService } from "@modules/customers/customers.service";
-import RoleEnum from "@enums/user-role.enum";
+import { UserRoleEnum } from "@enums/user-role.enum";
 import { ROLES_KEY } from "@decorators/roles.decorator";
 import { OWNERSHIP_KEY } from "@decorators/ownership.decorator";
 
@@ -47,48 +47,48 @@ export class AuthGuard implements CanActivate {
 		}
 	}
 
-	private hasRole(userRole: RoleEnum, roles: RoleEnum[]): boolean {
-		const roleHierarchy = {
-			[RoleEnum.CLIENT]: [RoleEnum.CLIENT],
-			[RoleEnum.EMPLOYEE]: [RoleEnum.CLIENT, RoleEnum.EMPLOYEE],
-			[RoleEnum.ADMIN]: [
-				RoleEnum.CLIENT,
-				RoleEnum.EMPLOYEE,
-				RoleEnum.ADMIN,
-			],
-			[RoleEnum.SUPER_ADMIN]: [
-				RoleEnum.CLIENT,
-				RoleEnum.EMPLOYEE,
-				RoleEnum.ADMIN,
-				RoleEnum.SUPER_ADMIN,
-			],
-			[RoleEnum.BRAINST_EMPLOYEE]: [
-				RoleEnum.CLIENT,
-				RoleEnum.EMPLOYEE,
-				RoleEnum.ADMIN,
-				RoleEnum.SUPER_ADMIN,
-				RoleEnum.BRAINST_EMPLOYEE,
-			],
-			[RoleEnum.BRAINST_ADMIN]: [
-				RoleEnum.CLIENT,
-				RoleEnum.EMPLOYEE,
-				RoleEnum.ADMIN,
-				RoleEnum.SUPER_ADMIN,
-				RoleEnum.BRAINST_EMPLOYEE,
-				RoleEnum.BRAINST_ADMIN,
-			],
-			[RoleEnum.BRAINST_SUPER_ADMIN]: [
-				RoleEnum.CLIENT,
-				RoleEnum.EMPLOYEE,
-				RoleEnum.ADMIN,
-				RoleEnum.SUPER_ADMIN,
-				RoleEnum.BRAINST_EMPLOYEE,
-				RoleEnum.BRAINST_ADMIN,
-				RoleEnum.BRAINST_SUPER_ADMIN,
-			],
-		};
+	// private hasRole(userRole: RoleEnum, roles: RoleEnum[]): boolean {
+	// 	const roleHierarchy = {
+	// 		[RoleEnum.CLIENT]: [RoleEnum.CLIENT],
+	// 		[RoleEnum.EMPLOYEE]: [RoleEnum.CLIENT, RoleEnum.EMPLOYEE],
+	// 		[RoleEnum.ADMIN]: [
+	// 			RoleEnum.CLIENT,
+	// 			RoleEnum.EMPLOYEE,
+	// 			RoleEnum.ADMIN,
+	// 		],
+	// 		[RoleEnum.SUPER_ADMIN]: [
+	// 			RoleEnum.CLIENT,
+	// 			RoleEnum.EMPLOYEE,
+	// 			RoleEnum.ADMIN,
+	// 			RoleEnum.SUPER_ADMIN,
+	// 		],
+	// 		[RoleEnum.BRAINST_EMPLOYEE]: [
+	// 			RoleEnum.CLIENT,
+	// 			RoleEnum.EMPLOYEE,
+	// 			RoleEnum.ADMIN,
+	// 			RoleEnum.SUPER_ADMIN,
+	// 			RoleEnum.BRAINST_EMPLOYEE,
+	// 		],
+	// 		[RoleEnum.BRAINST_ADMIN]: [
+	// 			RoleEnum.CLIENT,
+	// 			RoleEnum.EMPLOYEE,
+	// 			RoleEnum.ADMIN,
+	// 			RoleEnum.SUPER_ADMIN,
+	// 			RoleEnum.BRAINST_EMPLOYEE,
+	// 			RoleEnum.BRAINST_ADMIN,
+	// 		],
+	// 		[RoleEnum.BRAINST_SUPER_ADMIN]: [
+	// 			RoleEnum.CLIENT,
+	// 			RoleEnum.EMPLOYEE,
+	// 			RoleEnum.ADMIN,
+	// 			RoleEnum.SUPER_ADMIN,
+	// 			RoleEnum.BRAINST_EMPLOYEE,
+	// 			RoleEnum.BRAINST_ADMIN,
+	// 			RoleEnum.BRAINST_SUPER_ADMIN,
+	// 		],
+	// 	};
 
-		const allowedRoles = roleHierarchy[userRole] || [];
-		return roles.some((role) => allowedRoles.includes(role));
-	}
+	// 	const allowedRoles = roleHierarchy[userRole] || [];
+	// 	return roles.some((role) => allowedRoles.includes(role));
+	// }
 }

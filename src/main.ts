@@ -1,9 +1,11 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "@modules/app.module";
-import settings from "@constants/settings";
+import { settings } from "@constants/settings";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import * as bodyParser from "body-parser";
-import { ValidationPipe } from "@nestjs/common";
+import { CustomValidationPipe } from "@pipes/custom-validation.pipe";
+import { GlobalExceptionFilter } from "@exceptions/validator.exception";
+
 // import * as fs from "fs";
 // import * as yaml from "js-yaml";
 
@@ -14,12 +16,14 @@ async function bootstrap() {
 	app.use(bodyParser.json());
 
 	app.useGlobalPipes(
-		new ValidationPipe({
+		new CustomValidationPipe({
 			whitelist: true,
 			forbidNonWhitelisted: true,
 			transform: true,
 		}),
 	);
+
+	app.useGlobalFilters(new GlobalExceptionFilter());
 
 	const config = new DocumentBuilder()
 		.setTitle("Api NOM_DU_PROJET")

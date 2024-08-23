@@ -1,5 +1,5 @@
 import {
-	IsEmail,
+	IsAlpha,
 	IsEnum,
 	IsNotEmpty,
 	IsOptional,
@@ -7,13 +7,15 @@ import {
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import Regex from "@constants/regex";
-import UserStatusEnum from "@enums/user-status.enum";
-import UserRoleEnum from "@enums/user-role.enum";
+import { UserStatusEnum } from "@enums/user-status.enum";
+import { UserRoleEnum } from "@enums/user-role.enum";
 
 export class CreateUserDto {
 	@ApiProperty({ description: "The email of the user" })
 	@IsNotEmpty()
-	@Matches(Regex.email, { message: 'Email does not match the required pattern' })
+	@Matches(Regex.email, {
+		message: "Email does not match the required pattern",
+	})
 	email: string;
 
 	@ApiProperty({ description: "The phone number of the user" })
@@ -31,8 +33,8 @@ export class CreateUserDto {
 		enum: UserStatusEnum,
 	})
 	@IsOptional()
-	@IsEnum(UserStatusEnum)
-	status?: UserStatusEnum;
+	@IsAlpha()
+	status?: UserStatusEnum[];
 
 	@ApiPropertyOptional({
 		description: "The role of the user",

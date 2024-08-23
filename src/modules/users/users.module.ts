@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
 import { UsersService } from "@modules/users/users.service";
 import { UsersController } from "@modules/users/users.controller";
-import { DatabaseModule } from "@config/database/mongoose/mongoose.module";
+import { MongooseConfig } from "@config/database/mongoose.config";
 
 @Module({
-	imports: [DatabaseModule],
+	imports: [MongooseConfig],
 	controllers: [UsersController],
 	providers: [UsersService],
 	exports: [UsersModule],

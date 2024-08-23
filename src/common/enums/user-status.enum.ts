@@ -1,4 +1,4 @@
-enum UserStatusEnum {
+export enum UserStatusEnum {
 	ACTIVE = "ACTIVE",
 	INACTIVE = "INACTIVE",
 	SUSPENDED = "SUSPENDED",
@@ -8,5 +8,3 @@ enum UserStatusEnum {
 	CREATE_PASSWORD = "CREATE_PASSWORD",
 	ARCHIVED = "ARCHIVED",
 }
-
-export default UserStatusEnum;

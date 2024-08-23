@@ -5,8 +5,6 @@ import {
 <% if (documentation) { %>
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 <% } %>
-class Create<%= pascalCase %>Dto {
+export class Create<%= pascalCase %>Dto {
 	// PROPERTIES
 }
-
-export default Create<%= pascalCase %>Dto;

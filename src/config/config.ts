@@ -1,5 +1,5 @@
 export const CONFIG = {
-    email: {
-        sendEmail: false,
-    }
+	email: {
+		sendEmail: true,
+	},
 };

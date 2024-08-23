@@ -6,12 +6,13 @@ import { CreateUserDto } from "@modules/users/dto/create-user.dto";
 // import { UpdateUserPasswordDto } from "@modules/users/dto/update-user-password.dto";
 import { User, UserDocument } from "@modules/users/entities/user.entity";
 import { AppService } from "@modules/app.service";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UsersService extends AppService<
 	UserDocument,
 	CreateUserDto,
-	CreateUserDto
+	UpdateUserDto
 > {
 	constructor(
 		@InjectModel(User.name) private usersModel: Model<UserDocument>,

@@ -21,7 +21,7 @@ import {
 } from "@nestjs/swagger";
 import { Response } from "express";
 // import { AuthGuard } from "@guards/auth.guard";
-import RoleEnum from "@enums/user-role.enum";
+import { UserRoleEnum } from "@enums/user-role.enum";
 
 @ApiTags("users")
 @Controller("users")
@@ -46,7 +46,7 @@ export class UsersController extends AppController<
 		const { role } = createUserDto;
 
 		if (!role) {
-			createUserDto.role = RoleEnum.CLIENT;
+			createUserDto.role = UserRoleEnum.CLIENT;
 		}
 
 		return super.create(createUserDto, res);

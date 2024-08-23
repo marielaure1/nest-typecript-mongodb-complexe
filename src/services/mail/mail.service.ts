@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
-import settings from "@constants/settings";
+import { settings } from "@constants/settings";
 import { CONFIG } from "@config/config";
 
 interface MailProps {
@@ -13,12 +13,11 @@ interface MailProps {
 }
 
 @Injectable()
-export class Mail {
+export class MailService {
 	constructor(private readonly mailerService: MailerService) {}
 
 	public async sendMail(params: MailProps) {
-
-		if(CONFIG.email.sendEmail === true) {
+		if (CONFIG.email.sendEmail === true) {
 			const mailOptions = {
 				from: settings.MAIL_USER,
 				to: params.to,
@@ -28,16 +27,14 @@ export class Mail {
 			};
 
 			// if(params.attachments) {
-		//     mailOptions["attachments"] = params.attachments;
-		// }
+			//     mailOptions["attachments"] = params.attachments;
+			// }
 
 			const mailer = await this.mailerService.sendMail(mailOptions);
 
-		    return mailer;
+			return mailer;
 		}
 
 		return false;
-
-		
 	}
 }

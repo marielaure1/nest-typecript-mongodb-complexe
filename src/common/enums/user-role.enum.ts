@@ -1,4 +1,4 @@
-enum UserRoleEnum {
+export enum UserRoleEnum {
 	CLIENT = "CLIENT",
 	EMPLOYEE = "EMPLOYEE",
 	ADMIN = "ADMIN",
@@ -7,5 +7,3 @@ enum UserRoleEnum {
 	BRAINST_ADMIN = "BRAINST_ADMIN",
 	BRAINST_SUPER_ADMIN = "BRAINST_SUPER_ADMIN",
 }
-
-export default UserRoleEnum;

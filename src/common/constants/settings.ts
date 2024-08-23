@@ -1,8 +1,6 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const settings = {
+export const settings = {
 	...process.env,
 };
-
-export default settings;

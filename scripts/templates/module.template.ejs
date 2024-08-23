@@ -1,16 +1,16 @@
 import { Module<% if (authMiddleware) { %>, MiddlewareConsumer<% } %> } from "@nestjs/common";<% if (authMiddleware) { %>
 import { AuthMiddleware } from "@middlewares/auth.middleware";<% } %>
-import { <%= pascalCase %>Controller } from '@modules/<%= kebabCase %>s/<%= kebabCase %>.controller';<% if (moduleService) { %>
-import { <%= pascalCase %>Service } from '@modules/<%= kebabCase %>s/<%= kebabCase %>.service';<% } %>
+import { <%= pascalCase %>sController } from '@modules/<%= kebabCase %>s/<%= kebabCase %>s.controller';<% if (moduleService) { %>
+import { <%= pascalCase %>sService } from '@modules/<%= kebabCase %>s/<%= kebabCase %>s.service';<% } %>
 
 @Module({
   imports: [],
-  controllers: [<%= pascalCase %>Controller],
-  providers: [<% if (moduleService) { %><%= pascalCase %>Service<% } %>],
+  controllers: [<%= pascalCase %>sController],
+  providers: [<% if (moduleService) { %><%= pascalCase %>sService<% } %>],
   exports: [],
 })
-export class <%= pascalCase %>Module {<% if (authMiddleware) { %>
+export class <%= pascalCase %>sModule {<% if (authMiddleware) { %>
   configure(consumer: MiddlewareConsumer) {
-		consumer.apply(AuthMiddleware).forRoutes(<%= pascalCase %>Controller);
+		consumer.apply(AuthMiddleware).forRoutes(<%= pascalCase %>sController);
 	}
 <% } %>}

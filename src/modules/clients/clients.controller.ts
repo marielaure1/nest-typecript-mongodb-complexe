@@ -9,7 +9,6 @@ import {
 	Res,
 	HttpStatus,
 	// UseGuards,
-	Req,
 	Put,
 } from "@nestjs/common";
 import { ClientsService } from "@modules/clients/clients.service";
@@ -18,18 +17,12 @@ import { UpdateClientDto } from "@modules/clients/dto/update-client.dto";
 import { AppController } from "@modules/app.controller";
 import { ClientDocument } from "@modules/clients/entities/client.entity";
 import { Response } from "express";
-// import { AuthGuard } from "@guards/auth.guard";
-// import { Roles } from "@decorators/roles.decorator";
-// import RoleEnum from "@enums/user-role.enum";
-import { Ownership } from "@decorators/ownership.decorator";
 import {
 	ApiTags,
 	ApiOperation,
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import UserRoleEnum from "@enums/user-role.enum";
-import { Responses } from "@helpers/responses.helper";
 
 @ApiTags("clients")
 @Controller("clients")

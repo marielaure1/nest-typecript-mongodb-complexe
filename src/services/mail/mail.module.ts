@@ -1,8 +1,10 @@
 import { Module, Global } from "@nestjs/common";
-import settings from "@constants/settings";
+import { settings } from "@constants/settings";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { join } from "path";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
+import { MailHelper } from "@services/mail/helpers/mail.helper";
+import { MailService } from "@services/mail/mail.service";
 
 @Global()
 @Module({
@@ -17,7 +19,7 @@ import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handleba
 				},
 			},
 			defaults: {
-				from: '"No Reply" <noreply@booker.com>',
+				from: '"No Reply" <noreply@NOM.com>',
 			},
 			template: {
 				dir: join(__dirname, "../../services/mail/templates"),
@@ -28,6 +30,7 @@ import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handleba
 			},
 		}),
 	],
+	providers: [MailService, MailHelper],
 	exports: [MailerModule],
 })
 export class MailModule {}

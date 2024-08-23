@@ -1,17 +1,15 @@
-import bcrypt from "bcrypt";
-import * as cryptoJS from "crypto-js";
+import * as argon2 from "argon2";
 
 export default class Hash {
-	public salt = 10;
-	public bcrypt = bcrypt;
-	public crypto = cryptoJS;
-
-	public async hashData(data: string, saltCustom?: number) {
+	/**
+	 * @param data : string, data to hash
+	 * @returns data hashed
+	 */
+	public static async hashData(data: string) {
 		try {
-			const salt = await this.bcrypt.genSalt(
-				saltCustom ? saltCustom : this.salt,
-			);
-			const hash = await this.bcrypt.hash(data, salt);
+			const hash = await argon2.hash(data, {
+				type: argon2.argon2i,
+			});
 
 			return hash;
 		} catch (error) {
@@ -19,33 +17,29 @@ export default class Hash {
 		}
 	}
 
-	public async hashCompareData(
-		data: string,
-		dataToCompare: string,
-		saltCustom?: number,
-	) {
+	/**
+	 * @param data : string, data to compare
+	 * @param dataToCompare : string, data hashed to compare
+	 * @returns data compared
+	 */
+	public static async hashCompareData(data: string, dataHash: string) {
 		try {
-			const salt = await this.bcrypt.genSalt(
-				saltCustom ? saltCustom : this.salt,
-			);
-			const hash = await this.bcrypt.hash(data, salt);
+			const verfified = await argon2.verify(dataHash, data);
 
-			const compareData = await this.bcrypt.compare(dataToCompare, hash);
-
-			return compareData;
+			return verfified;
 		} catch (error) {
 			console.log(error.message);
 		}
 	}
 
-	public generateToken(data: string) {
-		try {
-			const secretKey = "ID CLIENT";
-			const token = this.crypto.HmacSHA256(data, secretKey).toString();
+	// public generateToken(data: string) {
+	// 	try {
+	// 		const secretKey = "ID CLIENT";
+	// 		const token = this.crypto.HmacSHA256(data, secretKey).toString();
 
-			return token;
-		} catch (error) {
-			console.log(error);
-		}
-	}
+	// 		return token;
+	// 	} catch (error) {
+	// 		console.log(error);
+	// 	}
+	// }
 }
