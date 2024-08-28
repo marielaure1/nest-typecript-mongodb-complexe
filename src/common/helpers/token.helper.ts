@@ -20,7 +20,7 @@ export class Token {
 
 	public static generateAccessToken(payload: object) {
 		try {
-			const accessToken = jwt.sign(payload, settings.JWT_SECRET, {
+			const accessToken = jwt.sign(payload, settings.ACCESS_JWT_SECRET, {
 				expiresIn: "15m",
 			});
 
@@ -35,9 +35,13 @@ export class Token {
 
 	public static generateRefreshToken(payload: object) {
 		try {
-			const refreshToken = jwt.sign(payload, settings.JWT_SECRET, {
-				expiresIn: "1d",
-			});
+			const refreshToken = jwt.sign(
+				payload,
+				settings.REFRESH_JWT_SECRET,
+				{
+					expiresIn: "1d",
+				},
+			);
 
 			return refreshToken;
 		} catch (error) {

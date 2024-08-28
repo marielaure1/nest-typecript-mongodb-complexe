@@ -7,8 +7,9 @@ import {
 } from "@modules/clients/entities/client.entity";
 import { CreateClientDto } from "@modules/clients/dto/create-client.dto";
 import { UpdateClientDto } from "@modules/clients/dto/update-client.dto";
-import { AppService } from "@modules/app.service";
+import { AppService } from "src/app.service";
 
+// TODO: Add more tests
 @Injectable()
 export class ClientsService extends AppService<
 	ClientDocument,

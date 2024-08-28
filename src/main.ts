@@ -1,5 +1,5 @@
 import { NestFactory } from "@nestjs/core";
-import { AppModule } from "@modules/app.module";
+import { AppModule } from "src/app.module";
 import { settings } from "@constants/settings";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import * as bodyParser from "body-parser";

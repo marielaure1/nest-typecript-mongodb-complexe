@@ -1,4 +1,7 @@
+import { StringHelper } from "@helpers/string.helper";
 import { Response } from "express";
+import { NumberHelper } from "./number.helper";
+import { HttpStatus } from "@nestjs/common";
 
 interface ResponsesProps {
 	res: Response;
@@ -9,6 +12,7 @@ interface ResponsesProps {
 	data?: object;
 	error?: object | string;
 	message?: string;
+	multiple?: boolean;
 }
 
 export class Responses {
@@ -16,61 +20,50 @@ export class Responses {
 		let success: boolean = false;
 		let codeMessage: string;
 		let action: string;
+		let schema: string;
 
-		if (params.code === 200 || params.code === 201) {
+		if (NumberHelper.startsWith(params.code, 2)) {
 			success = true;
 			codeMessage = "success";
-		} else if (
-			params.code.toString().startsWith("4") ||
-			params.code.toString().startsWith("5")
-		) {
-			success = false;
-			switch (params.code) {
-				case 404:
-					codeMessage = "not found";
-					break;
-				case 405:
-					codeMessage = "method not allowed";
-					break;
-				case 409:
-					codeMessage = "conflict";
-					break;
-				case 422:
-					codeMessage = "unprocessable entity";
-					break;
-				case 500:
-					codeMessage = "internal server error";
-					break;
-				default:
-					codeMessage = "client error";
-			}
 		} else {
-			codeMessage = "unknown error";
+			success = false;
+			codeMessage =
+				this.getStatusText(params.code).toLowerCase() || "error";
 		}
 
 		switch (params.method.toLowerCase()) {
 			case "get":
-				action = "retrieve";
+				action = "retrieved";
 				break;
 			case "post":
-				action = "create";
+				action = "created";
 				break;
 			case "put":
 			case "patch":
-				action = "update";
+				action = "updated";
 				break;
 			case "delete":
-				action = "delete";
+				action = "deleted";
 				break;
 			default:
 				action = "client error";
 		}
 
+		if (params.multiple) {
+			schema = StringHelper.capitalizeFirstLetter(
+				params.subject.toLowerCase(),
+			);
+		} else {
+			schema = StringHelper.capitalizeFirstLetter(
+				StringHelper.removeLastS(params.subject.toLowerCase()),
+			);
+		}
+
 		const message =
 			params.message ||
 			(success
-				? `${params.subject} ${action} with success`
-				: `${params.subject} ${codeMessage}`);
+				? `${schema} ${action} successfully`
+				: `${schema} ${codeMessage}`);
 		console.log(
 			`[${success ? "Success" : "Error"}] ${params.subject.toUpperCase()} > (${params.path} => code : ${params.code}, message: ${message})`,
 		);
@@ -88,5 +81,12 @@ export class Responses {
 		}
 
 		return params.res.status(params.code).json(responseJson);
+	}
+
+	public static getStatusText(statusCode: number): string | undefined {
+		const statusText = Object.keys(HttpStatus).find(
+			(key) => HttpStatus[key] === statusCode,
+		);
+		return statusText.replace("_", " ");
 	}
 }

@@ -25,6 +25,7 @@ import { UsersModule } from "@modules/users/users.module";
 import { AuthModule } from "@modules/auth/auth.module";
 import { LogsModule } from "@modules/logs/logs.module";
 import { ThrottlerConfig } from "@config/security/throttler.config";
+import { StripeModule } from "@services/stripe/stripe.module";
 // import { APP_GUARD } from "@nestjs/core";
 // import { ThrottlerBehindProxyGuard } from "@guards/throttler-behind-proxy.guard";
 
@@ -38,7 +39,7 @@ import { ThrottlerConfig } from "@config/security/throttler.config";
 		MongooseConfig,
 		MailModule,
 		ThrottlerConfig,
-		// StripeModule,
+		StripeModule,
 		LogsModule,
 		AuthModule,
 		UsersModule,

@@ -14,7 +14,7 @@ import {
 import { ClientsService } from "@modules/clients/clients.service";
 import { CreateClientDto } from "@modules/clients/dto/create-client.dto";
 import { UpdateClientDto } from "@modules/clients/dto/update-client.dto";
-import { AppController } from "@modules/app.controller";
+import { AppController } from "src/app.controller";
 import { ClientDocument } from "@modules/clients/entities/client.entity";
 import { Response } from "express";
 import {

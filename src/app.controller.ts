@@ -10,9 +10,10 @@ import {
 	HttpStatus,
 } from "@nestjs/common";
 import { Document } from "mongoose";
-import { AppService } from "@modules/app.service";
+import { AppService } from "src/app.service";
 import { Response } from "express";
 import { Responses } from "@helpers/responses.helper";
+import { StringHelper } from "@helpers/string.helper";
 
 @Controller()
 export abstract class AppController<
@@ -36,9 +37,11 @@ export abstract class AppController<
 				res,
 				path,
 				method,
-				code: HttpStatus.OK,
+				code: HttpStatus.CREATED,
 				subject: this.schema,
-				data,
+				data: {
+					[StringHelper.removeLastS(this.schema)]: data,
+				},
 			});
 		} catch (error) {
 			console.error(
@@ -74,13 +77,21 @@ export abstract class AppController<
 
 		try {
 			const data = await this.service.findAll();
+
+			if (!data || data.length === 0) {
+				throw new Error("Not Found");
+			}
+
 			return Responses.getResponse({
 				res,
 				path,
 				method,
 				code: HttpStatus.OK,
 				subject: this.schema,
-				data,
+				multiple: true,
+				data: {
+					[this.schema]: data,
+				},
 			});
 		} catch (error) {
 			console.error(
@@ -94,7 +105,8 @@ export abstract class AppController<
 					method,
 					code: HttpStatus.NOT_FOUND,
 					subject: this.schema,
-					error: error.message,
+					multiple: true,
+					error: `Not found`,
 				});
 			} else {
 				return Responses.getResponse({
@@ -102,6 +114,7 @@ export abstract class AppController<
 					path,
 					method,
 					code: HttpStatus.INTERNAL_SERVER_ERROR,
+					multiple: true,
 					subject: this.schema,
 					error: `An error occured while creating the ${this.schema}`,
 				});
@@ -116,13 +129,20 @@ export abstract class AppController<
 
 		try {
 			const data = await this.service.findOne(id);
+
+			if (!data) {
+				throw new Error("Not Found");
+			}
+
 			return Responses.getResponse({
 				res,
 				path,
 				method,
 				code: HttpStatus.OK,
 				subject: this.schema,
-				data,
+				data: {
+					[StringHelper.removeLastS(this.schema)]: data,
+				},
 			});
 		} catch (error) {
 			console.error(
@@ -162,13 +182,20 @@ export abstract class AppController<
 
 		try {
 			const data = await this.service.update(id, updateDto);
+
+			if (!data) {
+				throw new Error("Not Found");
+			}
+
 			return Responses.getResponse({
 				res,
 				path,
 				method,
 				code: HttpStatus.OK,
 				subject: this.schema,
-				data,
+				data: {
+					[StringHelper.removeLastS(this.schema)]: data,
+				},
 			});
 		} catch (error) {
 			console.error(
@@ -203,7 +230,14 @@ export abstract class AppController<
 		const method = "Delete";
 
 		try {
+			const data = await this.service.findOne(id);
+
+			if (!data) {
+				throw new Error("Not Found");
+			}
+
 			await this.service.remove(id);
+
 			return Responses.getResponse({
 				res,
 				path,

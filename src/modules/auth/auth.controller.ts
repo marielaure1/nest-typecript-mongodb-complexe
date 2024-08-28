@@ -65,8 +65,8 @@ export class AuthController {
 		status: HttpStatus.INTERNAL_SERVER_ERROR,
 		description: "Internal Server Error - Something went wrong.",
 	})
-	@Post("register")
-	async register(
+	@Post("register/client")
+	async registerClient(
 		@Body() createAuthClientDto: CreateAuthClientDto,
 		@Res() res: Response,
 		@Ip() ip: string,
@@ -102,7 +102,7 @@ export class AuthController {
 
 			// Email confirmation for the client
 			await this.mailHelper.sendConfirmAccountClient({
-				to: ["edjour.marie@gmail.com"],
+				to: [user.email],
 				templateDatas: {
 					firstName: client.firstName,
 					token: token,
@@ -118,11 +118,11 @@ export class AuthController {
 					lastName: client.lastName,
 					level: LogLevelEnum.INFO,
 					message: "User successfully registered",
-					context: "AuthController > register",
+					context: `AuthController > ${path}: `,
 					metadata: { user, client },
 				});
 			} catch (logError) {
-				console.error("Failed to create log in register: ", logError);
+				console.error(`Failed to create log in ${path}: `, logError);
 			}
 
 			return Responses.getResponse({
@@ -134,6 +134,145 @@ export class AuthController {
 				data: {
 					user,
 					client,
+				},
+			});
+		} catch (error) {
+			console.error(`AuthController > ${path} : `, error);
+
+			if (
+				error.message.includes("E11000 duplicate key error collection")
+			) {
+				let errorMessage = "An account already exists";
+
+				if (error.message.includes("email_1")) {
+					errorMessage = "An account with this email already exists";
+				} else if (error.message.includes("phone_1")) {
+					errorMessage =
+						"An account with this phone number already exists";
+				}
+
+				return Responses.getResponse({
+					res,
+					path,
+					method,
+					code: HttpStatus.CONFLICT,
+					subject: "auth",
+					error: errorMessage,
+				});
+			} else if (error.message === "Phone number is required") {
+				return Responses.getResponse({
+					res,
+					path,
+					method,
+					code: HttpStatus.UNPROCESSABLE_ENTITY,
+					subject: "auth",
+					error: "Phone number is required",
+				});
+			}
+
+			return Responses.getResponse({
+				res,
+				path,
+				method,
+				code: HttpStatus.INTERNAL_SERVER_ERROR,
+				subject: "auth",
+				error: "An error occurred while creating the account",
+			});
+		}
+	}
+
+	/**
+	 * Register a new client
+	 * @param createAuthClientDto : CreateAuthClientDto
+	 * @param res : Response
+	 * @returns : Response
+	 */
+	@ApiOperation({ summary: "Register a new organization" })
+	@ApiResponse({
+		status: HttpStatus.CREATED,
+		description: "The organization has been successfully registered.",
+	})
+	@ApiResponse({
+		status: HttpStatus.BAD_REQUEST,
+		description: "Bad Request - Invalid input data.",
+	})
+	@ApiResponse({
+		status: HttpStatus.CONFLICT,
+		description: "Conflict - Email or phone number already exists.",
+	})
+	@ApiResponse({
+		status: HttpStatus.UNPROCESSABLE_ENTITY,
+		description: "Unprocessable Entity - Phone number is required.",
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: "Internal Server Error - Something went wrong.",
+	})
+	@Post("register/organization")
+	async registerOrganization(
+		@Body() createAuthOrganizationDto: CreateAuthOrganizationDto,
+		@Res() res: Response,
+		@Ip() ip: string,
+	) {
+		const path = "registerOrganization";
+		const method = "Post";
+
+		try {
+			// Hash password
+			createAuthOrganizationDto.password = await Hash.hashData(
+				createAuthOrganizationDto.password,
+			);
+
+			// Create user and organization
+			let user = await this.userService.create(createAuthOrganizationDto);
+			const organization = await this.organizationService.create({
+				...createAuthOrganizationDto,
+				userId: user?._id?.toString(),
+			});
+
+			user = await this.userService.findOne(user?._id?.toString());
+
+			// Generate token for email confirmation
+			const payload = { sub: user._id, email: user.email };
+
+			const token = Token.generateToken(payload);
+
+			// Email confirmation for the organization
+			await this.mailHelper.sendConfirmAccountClient({
+				to: [user.email],
+				templateDatas: {
+					organizationName:
+						organization.organizationName ??
+						organization.firstName + organization.lastName,
+					token: token,
+				},
+			});
+
+			// Log the registration
+			try {
+				await this.logService.create({
+					ip,
+					userId: user._id.toString(),
+					firstName: organization.firstName,
+					lastName: organization.lastName,
+					level: LogLevelEnum.INFO,
+					message: "User successfully registered",
+					context: `AuthController > ${path}: `,
+					metadata: { user, organization },
+				});
+			} catch (logError) {
+				console.error(`Failed to create log in ${path}: `, logError);
+			}
+
+			return Responses.getResponse({
+				res,
+				path,
+				method,
+				code: HttpStatus.CREATED,
+				subject: "auth",
+				data: {
+					user,
+					organization,
 				},
 			});
 		} catch (error) {
@@ -257,7 +396,7 @@ export class AuthController {
 				const tokenConfirmation = Token.generateToken(payload);
 
 				await this.mailHelper.sendConfirmAccountClient({
-					to: ["edjour.marie@gmail.com"],
+					to: [user[0].email],
 					templateDatas: {
 						firstName: client[0].firstName,
 						token: tokenConfirmation,
@@ -298,11 +437,11 @@ export class AuthController {
 					lastName: client[0].lastName,
 					level: LogLevelEnum.INFO,
 					message: "User successfully registered",
-					context: "AuthController > register",
+					context: `AuthController > ${path}: `,
 					metadata: { user, client },
 				});
 			} catch (logError) {
-				console.error("Failed to create log in register: ", logError);
+				console.error(`Failed to create log in ${path}: `, logError);
 			}
 
 			return Responses.getResponse({
@@ -451,7 +590,7 @@ export class AuthController {
 
 				// Email confirmation for the client
 				await this.mailHelper.sendConfirmAccountClient({
-					to: ["edjour.marie@gmail.com"],
+					to: [user[0].email],
 					templateDatas: {
 						firstName: client[0].firstName,
 						token: newToken,
@@ -475,11 +614,11 @@ export class AuthController {
 					lastName: client[0].lastName,
 					level: LogLevelEnum.INFO,
 					message: "User successfully confirmed account",
-					context: "AuthController > confirm",
+					context: `AuthController > ${path}: `,
 					metadata: { user, client },
 				});
 			} catch (logError) {
-				console.error("Failed to create log in confirm: ", logError);
+				console.error(`Failed to create log in ${path}: `, logError);
 			}
 
 			return Responses.getResponse({
@@ -730,11 +869,11 @@ export class AuthController {
 					lastName: client[0].lastName,
 					level: LogLevelEnum.INFO,
 					message: "User successfully registered",
-					context: "AuthController > register",
+					context: `AuthController > ${path}: `,
 					metadata: { user, client },
 				});
 			} catch (logError) {
-				console.error("Failed to create log in register: ", logError);
+				console.error(`Failed to create log in ${path}: `, logError);
 			}
 
 			return Responses.getResponse({
@@ -870,11 +1009,11 @@ export class AuthController {
 					lastName: client[0].lastName,
 					level: LogLevelEnum.INFO,
 					message: "User successfully registered",
-					context: "AuthController > register",
+					context: `AuthController > ${path}: `,
 					metadata: { user, client },
 				});
 			} catch (logError) {
-				console.error("Failed to create log in register: ", logError);
+				console.error(`Failed to create log in ${path}: `, logError);
 			}
 
 			return Responses.getResponse({

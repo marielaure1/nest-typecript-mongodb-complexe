@@ -10,7 +10,7 @@ import { AppService } from "@modules/app.service";
 export class <%= pascalCase %>sService <% if (moduleExtends) { %>extends AppService<
 	<%= pascalCase %>Document,
 	Create<%= pascalCase %>Dto,
-	Create<%= pascalCase %>Dto
+	Update<%= pascalCase %>Dto
 > <% } %>{
 	constructor(<% if (moduleEntities) { %>
 		@InjectModel(<%= pascalCase %>.name) private <%= camelCase %>sModel: Model<<%= pascalCase %>Document>,

@@ -6,6 +6,7 @@ import { UpdateClientDto } from "./dto/update-client.dto";
 import { Response, Request } from "express";
 import { ValidationError } from "class-validator";
 
+// TODO: Add more tests
 describe("ClientsController", () => {
 	let controller: ClientsController;
 	let service: ClientsService;

@@ -12,7 +12,7 @@ import { UsersService } from "@modules/users/users.service";
 import { CreateUserDto } from "@modules/users/dto/create-user.dto";
 import { UpdateUserDto } from "@modules/users/dto/update-user.dto";
 import { UserDocument } from "@modules/users/entities/user.entity";
-import { AppController } from "@modules/app.controller";
+import { AppController } from "src/app.controller";
 import {
 	ApiTags,
 	ApiOperation,

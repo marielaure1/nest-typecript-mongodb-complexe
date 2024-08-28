@@ -3,7 +3,7 @@ import { OrganizationsService } from "@modules/organizations/organizations.servi
 import { CreateOrganizationDto } from "@modules/organizations/dto/create-organization.dto";
 import { UpdateOrganizationDto } from "@modules/organizations/dto/update-organization.dto";
 import { OrganizationDocument } from "@modules/organizations/entities/organization.entity";
-import { AppController } from "@modules/app.controller";
+import { AppController } from "src/app.controller";
 import {
 	ApiTags,
 	ApiOperation,
