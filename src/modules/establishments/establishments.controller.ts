@@ -11,6 +11,8 @@ import {
 	ApiBearerAuth,
 } from "@nestjs/swagger";
 import { Response } from "express";
+import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { Connection } from "mongoose";
 
 @ApiTags("establishments")
 @Controller("establishments")
@@ -19,7 +21,11 @@ export class EstablishmentsController extends AppController<
 	CreateEstablishmentDto,
 	UpdateEstablishmentDto
 > {
-	constructor(private readonly establishmentsService: EstablishmentsService) {
-		super(establishmentsService, "establishments");
+	constructor(
+		private readonly establishmentsService: EstablishmentsService,
+		logHelper: LogHelper,
+		connection: Connection,
+	) {
+		super(establishmentsService, "establishments", connection, logHelper);
 	}
 }

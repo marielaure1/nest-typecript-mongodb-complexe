@@ -1,4 +1,12 @@
-import { Body, Controller, HttpStatus, Ip, Post, Req, Res } from "@nestjs/common";
+import {
+	Body,
+	Controller,
+	HttpStatus,
+	Ip,
+	Post,
+	Req,
+	Res,
+} from "@nestjs/common";
 import { PlansService } from "@modules/plans/plans.service";
 import { CreatePlanDto } from "@modules/plans/dto/create-plan.dto";
 import { UpdatePlanDto } from "@modules/plans/dto/update-plan.dto";
@@ -10,12 +18,14 @@ import {
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import { Response } from "express";
-import { StripeProductService } from "@services/stripe/product/stripe-product.service";
-import { StripePriceService } from "@services/stripe/price/stripe-price.service";
+import { Response, Request } from "express";
+import { StripeProductService } from "@src/providers/stripe/product/stripe-product.service";
+import { StripePriceService } from "@src/providers/stripe/price/stripe-price.service";
 import { LogsService } from "@modules/logs/logs.service";
+import { LogHelper } from "@modules/logs/helpers/log.helper";
 import { Responses } from "@helpers/responses.helper";
-import { LogLevelEnum } from "@enums/logs.enum";
+import { LogLevelEnum } from "@enums/log-level.enum";
+import { Connection } from "mongoose";
 
 @ApiTags("plans")
 @Controller("plans")
@@ -28,9 +38,10 @@ export class PlansController extends AppController<
 		private readonly plansService: PlansService,
 		private readonly stripeProductService: StripeProductService,
 		private readonly stripePriceService: StripePriceService,
-		private readonly logsService: LogsService,
+		connection: Connection,
+		logHelper: LogHelper,
 	) {
-		super(plansService, "plans");
+		super(plansService, "plans", connection, logHelper);
 	}
 
 	@ApiOperation({ summary: "Create a new plan" })
@@ -44,7 +55,7 @@ export class PlansController extends AppController<
 	})
 	@ApiBearerAuth()
 	@Post()
-	async createPlan(
+	async create(
 		@Body() createPlanDto: CreatePlanDto,
 		@Res() res: Response,
 		@Req() req: Request,
@@ -53,32 +64,26 @@ export class PlansController extends AppController<
 		const path = "register";
 		const method = "Post";
 
-		const { user, client } = req;
-
 		try {
 			// Create a stripe product
-			const stripeProduct = await this.stripeProductService.create(createPlanDto);
+			const stripeProduct =
+				await this.stripeProductService.create(createPlanDto);
 
-			if(!stripeProduct){
+			if (!stripeProduct) {
 				throw new Error("Failed to create stripe product");
 			}
 
-			try {
-				await this.logsService.create({
-					ip,
-					userId: user._id.toString(),
-					firstName: client.firstName,
-					lastName: client.lastName,
-					level: LogLevelEnum.INFO,
-					message: "Stripe product successfully registered",
-					context: `PlansController > ${path}: `,
-					metadata: { user, client },
-				});
-			} catch (logError) {
-				console.error(`Failed to create log in ${path}: `, logError);
-			}
+			this.logHelper.log({
+				ip: ip,
+				user: req["user"],
+				userInfos: req["userInfos"],
+				level: LogLevelEnum.INFO,
+				message: "Stripe product successfully registered",
+				context: `PlansController > ${path}: `,
+				metadata: { user: req["user"], client: req["userInfos"] },
+			});
 
-			return super.create(createPlanDto, res);
+			return super.create(createPlanDto, res, req, ip);
 		} catch (error) {
 			console.error(`PlansController > ${path} : `, error);
 

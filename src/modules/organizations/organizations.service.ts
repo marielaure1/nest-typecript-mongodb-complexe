@@ -13,7 +13,7 @@ import { AppService } from "src/app.service";
 export class OrganizationsService extends AppService<
 	OrganizationDocument,
 	CreateOrganizationDto,
-	CreateOrganizationDto
+	UpdateOrganizationDto
 > {
 	constructor(
 		@InjectModel(Organization.name)

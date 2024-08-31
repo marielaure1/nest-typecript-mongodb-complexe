@@ -1,0 +1,24 @@
+{
+    "tsconfig": "tsconfig.json",
+    "output": "documentation",
+    "theme": "material",
+    "name": "Documentation du Projet",
+    "includes": "docs",
+    "includesName": "Documentation Complémentaire",
+    "coverageTest": false,
+    "disableSourceCode": false,
+    "disableGraph": false,
+    "disableCoverage": false,
+    "disablePrivate": false,
+    "disableInternal": false,
+    "disableLifeCycleHooks": false,
+    "disableRoutesGraph": false,
+    "hideGenerator": false,
+    "exportFormat": "html",
+    "serve": false,
+    "port": 8080,
+    "open": true,
+    "watch": false,
+    "silent": false
+  }
+  

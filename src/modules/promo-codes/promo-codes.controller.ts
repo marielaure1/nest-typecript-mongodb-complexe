@@ -11,6 +11,9 @@ import {
 	ApiBearerAuth,
 } from "@nestjs/swagger";
 import { Response } from "express";
+import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { log } from "console";
+import { Connection } from "mongoose";
 
 @ApiTags("promo-codes")
 @Controller("promo-codes")
@@ -19,7 +22,11 @@ export class PromoCodesController extends AppController<
 	CreatePromoCodeDto,
 	UpdatePromoCodeDto
 > {
-	constructor(private readonly promoCodesService: PromoCodesService) {
-		super(promoCodesService, "promoCodes");
+	constructor(
+		private readonly promoCodesService: PromoCodesService,
+		logHelper: LogHelper,
+		connection: Connection,
+	) {
+		super(promoCodesService, "promoCodes", connection, logHelper);
 	}
 }

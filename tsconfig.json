@@ -18,6 +18,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      
       /*
       * Modules
       */
@@ -33,7 +34,7 @@
       /*
       * Providers
       */
-      "@services/*": ["src/services/*"],
+      "@providers/*": ["src/providers/*"],
       /*
       * Common
       */
@@ -41,6 +42,7 @@
       "@decorators/*": ["./src/common/decorators/*"],
       "@dtos/*": ["./src/common/dtos/*"],
       "@enums/*": ["./src/common/enums/*"],
+      "@types/*": ["./src/common/types/*"],
       "@exceptions/*": ["./src/common/exceptions/*"],
       "@guards/*": ["./src/common/guards/*"],
       "@helpers/*": ["./src/common/helpers/*"],
@@ -50,6 +52,10 @@
       "@pipes/*": ["./src/common/pipes/*"],
       "@serializers/*": ["./src/common/serializers/*"],
       "@entities/*": ["./src/common/entities/*"],
+      /*
+      * src
+      */
+      "@src/*": ["./src/*"],
     }, 
   },
   "include": [

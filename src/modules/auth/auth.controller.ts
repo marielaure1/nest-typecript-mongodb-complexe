@@ -7,6 +7,7 @@ import {
 	Param,
 	Post,
 	Put,
+	Req,
 	Res,
 } from "@nestjs/common";
 import { UsersService } from "@modules/users/users.service";
@@ -14,19 +15,25 @@ import { ClientsService } from "@modules/clients/clients.service";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Responses } from "@helpers/responses.helper";
 import { CreateAuthClientDto } from "@modules/auth/dto/create-auth-client.dto";
+import { CreateAuthOrganizationDto } from "@modules/auth/dto/create-auth-organization.dto";
 import { Response } from "express";
 import { NotificationHelper } from "@helpers/notification.helper";
 import Hash from "@helpers/hash.helper";
 import { Token } from "@helpers/token.helper";
 import { UserStatusEnum } from "@enums/user-status.enum";
-import { LogsService } from "@modules/logs/logs.service";
-import { MailHelper } from "@services/mail/helpers/mail.helper";
+import { MailHelper } from "@src/providers/mail/helpers/mail.helper";
 import { TokenTypeEnum } from "@enums/token-type.enum";
 import { LoginUserDto } from "@modules/auth/dto/login-user.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
-import { LogLevelEnum } from "@enums/logs.enum";
+import { LogLevelEnum } from "@enums/log-level.enum";
+import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { OrganizationsService } from "@modules/organizations/organizations.service";
+import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
+import { UserRoleEnum } from "@enums/user-role.enum";
+import { StringHelper } from "@helpers/string.helper";
+import { Connection } from "mongoose";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -34,9 +41,14 @@ export class AuthController {
 	constructor(
 		private readonly userService: UsersService,
 		private readonly clientService: ClientsService,
+		private readonly bookerEmployeesService: BookerEmployeesService,
+		private readonly organizationsService: OrganizationsService,
 		private readonly mailHelper: MailHelper,
-		private readonly logService: LogsService,
-	) {}
+		private readonly logHelper: LogHelper,
+		private readonly connection: Connection,
+	) {
+		console.log("LogHelper:", this.logHelper);
+	}
 
 	/**
 	 * Register a new client
@@ -69,10 +81,13 @@ export class AuthController {
 	async registerClient(
 		@Body() createAuthClientDto: CreateAuthClientDto,
 		@Res() res: Response,
+		@Req() req: Request,
 		@Ip() ip: string,
 	) {
 		const path = "register";
 		const method = "Post";
+		const session = await this.connection.startSession();
+		session.startTransaction();
 
 		try {
 			// Check if phone number is required
@@ -86,14 +101,19 @@ export class AuthController {
 				createAuthClientDto.password,
 			);
 
-			// Create user and client
-			let user = await this.userService.create(createAuthClientDto);
-			const client = await this.clientService.create({
-				...createAuthClientDto,
-				userId: user?._id?.toString(),
-			});
+			// Create user and client inside the session
+			const user = await this.userService.create(
+				createAuthClientDto,
+				session,
+			);
 
-			user = await this.userService.findOne(user?._id?.toString());
+			const client = await this.clientService.create(
+				{
+					...createAuthClientDto,
+					userId: user?._id?.toString(),
+				},
+				session,
+			);
 
 			// Generate token for email confirmation
 			const payload = { sub: user._id, email: user.email };
@@ -110,20 +130,16 @@ export class AuthController {
 			});
 
 			// Log the registration
-			try {
-				await this.logService.create({
-					ip,
-					userId: user._id.toString(),
-					firstName: client.firstName,
-					lastName: client.lastName,
-					level: LogLevelEnum.INFO,
-					message: "User successfully registered",
-					context: `AuthController > ${path}: `,
-					metadata: { user, client },
-				});
-			} catch (logError) {
-				console.error(`Failed to create log in ${path}: `, logError);
-			}
+			await this.logHelper.log({
+				ip,
+				user: req["user"],
+				userInfos: req["userInfos"],
+				level: LogLevelEnum.INFO,
+				message: "Client successfully registered",
+				context: `AuthController > ${path}: `,
+			});
+
+			await session.commitTransaction();
 
 			return Responses.getResponse({
 				res,
@@ -137,6 +153,8 @@ export class AuthController {
 				},
 			});
 		} catch (error) {
+			await session.abortTransaction();
+
 			console.error(`AuthController > ${path} : `, error);
 
 			if (
@@ -178,6 +196,8 @@ export class AuthController {
 				subject: "auth",
 				error: "An error occurred while creating the account",
 			});
+		} finally {
+			session.endSession();
 		}
 	}
 
@@ -212,25 +232,49 @@ export class AuthController {
 	async registerOrganization(
 		@Body() createAuthOrganizationDto: CreateAuthOrganizationDto,
 		@Res() res: Response,
+		@Req() req: Request,
 		@Ip() ip: string,
 	) {
 		const path = "registerOrganization";
 		const method = "Post";
 
 		try {
-			// Hash password
-			createAuthOrganizationDto.password = await Hash.hashData(
-				createAuthOrganizationDto.password,
+			// Create organization
+			const organization = await this.organizationsService.create(
+				createAuthOrganizationDto.organization,
 			);
 
-			// Create user and organization
-			let user = await this.userService.create(createAuthOrganizationDto);
-			const organization = await this.organizationService.create({
-				...createAuthOrganizationDto,
-				userId: user?._id?.toString(),
-			});
+			if (!organization) {
+				throw new Error("Organization could not be created");
+			}
 
-			user = await this.userService.findOne(user?._id?.toString());
+			createAuthOrganizationDto.user.role =
+				UserRoleEnum.ORGANIZATION_SUPER_ADMIN;
+			createAuthOrganizationDto.user.password =
+				StringHelper.generatePassword();
+
+			// Create user
+			const user = await this.userService.create(
+				createAuthOrganizationDto.user,
+			);
+
+			if (!user) {
+				organization.deleteOne();
+				throw new Error("User could not be created");
+			}
+
+			// Create booker employee
+			const bookerEmployee = await this.bookerEmployeesService.create(
+				createAuthOrganizationDto.bookerEmployee,
+			);
+
+			if (!bookerEmployee) {
+				organization.deleteOne();
+				user.deleteOne();
+				throw new Error("Booker employee could not be created");
+			}
+
+			// user = await this.userService.findOne(user?._id?.toString());
 
 			// Generate token for email confirmation
 			const payload = { sub: user._id, email: user.email };
@@ -238,31 +282,32 @@ export class AuthController {
 			const token = Token.generateToken(payload);
 
 			// Email confirmation for the organization
-			await this.mailHelper.sendConfirmAccountClient({
+			await this.mailHelper.sendConfirmAccountOrganization({
 				to: [user.email],
 				templateDatas: {
-					organizationName:
-						organization.organizationName ??
-						organization.firstName + organization.lastName,
+					organizationName: organization.name,
+					userEmail: user.email,
+					token: token,
+				},
+			});
+
+			// Email mot de passe for the organization
+			await this.mailHelper.sendInitPasswordEmail({
+				to: [user.email],
+				templateDatas: {
 					token: token,
 				},
 			});
 
 			// Log the registration
-			try {
-				await this.logService.create({
-					ip,
-					userId: user._id.toString(),
-					firstName: organization.firstName,
-					lastName: organization.lastName,
-					level: LogLevelEnum.INFO,
-					message: "User successfully registered",
-					context: `AuthController > ${path}: `,
-					metadata: { user, organization },
-				});
-			} catch (logError) {
-				console.error(`Failed to create log in ${path}: `, logError);
-			}
+			this.logHelper.log({
+				ip,
+				user: req["user"],
+				userInfos: req["userInfos"],
+				level: LogLevelEnum.INFO,
+				message: "Organization successfully registered",
+				context: `AuthController > ${path}: `,
+			});
 
 			return Responses.getResponse({
 				res,
@@ -347,6 +392,7 @@ export class AuthController {
 	async login(
 		@Body() loginUserDto: LoginUserDto,
 		@Res() res: Response,
+		@Req() req: Request,
 		@Ip() ip: string,
 	) {
 		const path = "login";
@@ -429,20 +475,15 @@ export class AuthController {
 			});
 
 			// Log the login
-			try {
-				await this.logService.create({
-					ip,
-					userId: user[0]._id.toString(),
-					firstName: client[0].firstName,
-					lastName: client[0].lastName,
-					level: LogLevelEnum.INFO,
-					message: "User successfully registered",
-					context: `AuthController > ${path}: `,
-					metadata: { user, client },
-				});
-			} catch (logError) {
-				console.error(`Failed to create log in ${path}: `, logError);
-			}
+			this.logHelper.log({
+				ip: ip,
+				user: req["user"],
+				userInfos: req["userInfos"],
+				level: LogLevelEnum.INFO,
+				message: "User successfully registered",
+				context: `AuthController > ${path}: `,
+				metadata: { user, client },
+			});
 
 			return Responses.getResponse({
 				res,
@@ -529,6 +570,7 @@ export class AuthController {
 	async confirm(
 		@Param("token") token: string,
 		@Res() res: Response,
+		@Req() req: Request,
 		@Ip() ip: string,
 	) {
 		const path = "confirm";
@@ -606,20 +648,15 @@ export class AuthController {
 			});
 
 			// Log the confirmation
-			try {
-				await this.logService.create({
-					ip,
-					userId: user[0]._id.toString(),
-					firstName: client[0].firstName,
-					lastName: client[0].lastName,
-					level: LogLevelEnum.INFO,
-					message: "User successfully confirmed account",
-					context: `AuthController > ${path}: `,
-					metadata: { user, client },
-				});
-			} catch (logError) {
-				console.error(`Failed to create log in ${path}: `, logError);
-			}
+			this.logHelper.log({
+				ip: ip,
+				user: req["user"],
+				userInfos: req["userInfos"],
+				level: LogLevelEnum.INFO,
+				message: "User successfully confirmed account",
+				context: `AuthController > ${path}: `,
+				metadata: { user, client },
+			});
 
 			return Responses.getResponse({
 				res,
@@ -816,6 +853,7 @@ export class AuthController {
 	async resetPassword(
 		@Body() resetPasswordDto: ResetPasswordDto,
 		@Res() res: Response,
+		@Req() req: Request,
 		@Ip() ip: string,
 	) {
 		const { token, newPassword } = resetPasswordDto;
@@ -862,11 +900,10 @@ export class AuthController {
 					throw new Error("Client not found");
 				}
 
-				await this.logService.create({
-					ip,
-					userId: user[0]._id.toString(),
-					firstName: client[0].firstName,
-					lastName: client[0].lastName,
+				this.logHelper.log({
+					ip: ip,
+					user: req["user"],
+					userInfos: req["userInfos"],
 					level: LogLevelEnum.INFO,
 					message: "User successfully registered",
 					context: `AuthController > ${path}: `,
@@ -955,6 +992,7 @@ export class AuthController {
 	async forgotPassword(
 		@Body() forgotPasswordDto: ForgotPasswordDto,
 		@Res() res: Response,
+		@Req() req: Request,
 		@Ip() ip: string,
 	) {
 		const { email } = forgotPasswordDto;
@@ -1002,11 +1040,10 @@ export class AuthController {
 					throw new Error("Client not found");
 				}
 
-				await this.logService.create({
-					ip,
-					userId: user[0]._id.toString(),
-					firstName: client[0].firstName,
-					lastName: client[0].lastName,
+				this.logHelper.log({
+					ip: ip,
+					user: req["user"],
+					userInfos: req["userInfos"],
 					level: LogLevelEnum.INFO,
 					message: "User successfully registered",
 					context: `AuthController > ${path}: `,

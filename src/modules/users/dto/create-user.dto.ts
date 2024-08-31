@@ -13,9 +13,7 @@ import { UserRoleEnum } from "@enums/user-role.enum";
 export class CreateUserDto {
 	@ApiProperty({ description: "The email of the user" })
 	@IsNotEmpty()
-	@Matches(Regex.email, {
-		message: "Email does not match the required pattern",
-	})
+	@Matches(Regex.email)
 	email: string;
 
 	@ApiProperty({ description: "The phone number of the user" })

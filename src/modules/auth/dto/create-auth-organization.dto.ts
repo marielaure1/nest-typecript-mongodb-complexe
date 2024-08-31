@@ -1,10 +1,15 @@
-import { Document } from "mongoose";
-import { IntersectionType } from "@nestjs/swagger";
 import { CreateUserDto } from "@modules/users/dto/create-user.dto";
 import { CreateOrganizationDto } from "@modules/organizations/dto/create-organization.dto";
+import { Type } from "class-transformer";
+import { CreateBookerEmployeeDto } from "@modules/booker-employees/dto/create-booker-employee.dto";
 
-export class CreateAuthClientDto extends IntersectionType(
-	Document,
-	CreateUserDto,
-	CreateOrganizationDto,
-) {}
+export class CreateAuthOrganizationDto {
+	@Type(() => CreateOrganizationDto)
+	organization: CreateOrganizationDto;
+
+	@Type(() => CreateUserDto)
+	user: CreateUserDto;
+
+	@Type(() => CreateBookerEmployeeDto)
+	bookerEmployee: CreateBookerEmployeeDto;
+}

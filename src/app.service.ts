@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Model, Document } from "mongoose";
+import { Model, Document, ClientSession } from "mongoose";
 
 @Injectable()
 export abstract class AppService<
@@ -12,10 +12,13 @@ export abstract class AppService<
 		private readonly populate: Array<string> = [],
 	) {}
 
-	async create(createDto: CreateDto): Promise<AppModel> {
+	async create(
+		createDto: CreateDto,
+		session?: ClientSession,
+	): Promise<AppModel> {
 		try {
 			const createdModel = new this.appModel(createDto);
-			await createdModel.save();
+			await createdModel.save({ session });
 			return this.populateModel(createdModel);
 		} catch (error) {
 			console.error("AppService > create : ", error);
@@ -23,22 +26,31 @@ export abstract class AppService<
 		}
 	}
 
-	async findAll(): Promise<AppModel[]> {
-		return this.appModel.find().populate(this.populate).exec();
+	async findAll(session?: ClientSession): Promise<AppModel[]> {
+		return this.appModel
+			.find()
+			.populate(this.populate)
+			.session(session)
+			.exec();
 	}
 
-	async findOne(id: string): Promise<AppModel> {
+	async findOne(id: string, session?: ClientSession): Promise<AppModel> {
 		const model = await this.appModel
 			.findById(id)
 			.populate(this.populate)
+			.session(session)
 			.exec();
 		return this.populateModel(model);
 	}
 
-	async update(id: string, updateDto: UpdateDto): Promise<AppModel> {
+	async update(
+		id: string,
+		updateDto: UpdateDto,
+		session?: ClientSession,
+	): Promise<AppModel> {
 		try {
 			const updatedModel = await this.appModel
-				.findByIdAndUpdate(id, updateDto, { new: true })
+				.findByIdAndUpdate(id, updateDto, { new: true, session })
 				.populate(this.populate)
 				.exec();
 			return this.populateModel(updatedModel);
@@ -48,8 +60,8 @@ export abstract class AppService<
 		}
 	}
 
-	async remove(id: string): Promise<void> {
-		await this.appModel.findByIdAndDelete(id).exec();
+	async remove(id: string, session?: ClientSession): Promise<void> {
+		await this.appModel.findByIdAndDelete(id).session(session).exec();
 	}
 
 	async findWhere({
@@ -57,11 +69,13 @@ export abstract class AppService<
 		sort,
 		limit,
 		find,
+		session,
 	}: {
 		where: object;
 		sort?: string;
 		limit?: number;
 		find?: string;
+		session?: ClientSession;
 	}): Promise<AppModel[]> {
 		return await this.appModel
 			.find(where)
@@ -69,12 +83,20 @@ export abstract class AppService<
 			.populate(this.populate)
 			.limit(limit)
 			.select(find)
+			.session(session)
 			.exec();
 	}
 
-	async updateMany(where: object, updateDto: UpdateDto): Promise<any> {
+	async updateMany(
+		where: object,
+		updateDto: UpdateDto,
+		session?: ClientSession,
+	): Promise<any> {
 		try {
-			return await this.appModel.updateMany(where, updateDto).exec();
+			return await this.appModel
+				.updateMany(where, updateDto)
+				.session(session)
+				.exec();
 		} catch (error) {
 			console.error("AppService > updateMany : ", error);
 			throw error;

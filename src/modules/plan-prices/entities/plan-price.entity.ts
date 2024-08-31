@@ -8,6 +8,9 @@ export type PlanPriceDocument = PlanPrice & Document;
 })
 export class PlanPrice {
 	@Prop({ required: true })
+	name: string;
+
+	@Prop({ required: true })
 	amount: number;
 
 	@Prop({ required: true })
@@ -24,9 +27,6 @@ export class PlanPrice {
 
 	@Prop({ required: true })
 	active: boolean;
-
-	@Prop({ required: true })
-	livemode: boolean;
 
 	createdAt?: Date;
 	updatedAt?: Date;

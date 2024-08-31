@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest();
 
 		try {
-			// const user = await this.usersService.findOneByFirebaseUid(request["request"].uid);
+			// const user = await this.usersService.findOne(request["request"].uid);
 			// request['user'] = user;
 
 			// const customer = await this.customersService.findOneByUser(user._id);

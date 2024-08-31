@@ -3,26 +3,28 @@ import {
 	Get,
 	Post,
 	Body,
-	// Patch,
 	Param,
 	Delete,
 	Res,
 	HttpStatus,
-	// UseGuards,
 	Put,
+	Req,
+	Ip,
 } from "@nestjs/common";
 import { ClientsService } from "@modules/clients/clients.service";
 import { CreateClientDto } from "@modules/clients/dto/create-client.dto";
 import { UpdateClientDto } from "@modules/clients/dto/update-client.dto";
 import { AppController } from "src/app.controller";
 import { ClientDocument } from "@modules/clients/entities/client.entity";
-import { Response } from "express";
+import { Response, Request } from "express";
 import {
 	ApiTags,
 	ApiOperation,
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
+import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { Connection } from "mongoose";
 
 @ApiTags("clients")
 @Controller("clients")
@@ -31,8 +33,12 @@ export class ClientsController extends AppController<
 	CreateClientDto,
 	UpdateClientDto
 > {
-	constructor(private readonly clientsService: ClientsService) {
-		super(clientsService, "clients");
+	constructor(
+		private readonly clientsService: ClientsService,
+		logHelper: LogHelper,
+		connection: Connection,
+	) {
+		super(clientsService, "clients", connection, logHelper);
 	}
 
 	@ApiOperation({ summary: "Create a new client" })
@@ -49,8 +55,10 @@ export class ClientsController extends AppController<
 	async create(
 		@Body() createClientDto: CreateClientDto,
 		@Res() res: Response,
+		@Req() req: Request,
+		@Ip() ip: string,
 	) {
-		return super.create(createClientDto, res);
+		return super.create(createClientDto, res, req, ip);
 	}
 
 	@ApiOperation({ summary: "Get all clients" })
@@ -59,9 +67,10 @@ export class ClientsController extends AppController<
 		status: HttpStatus.NOT_FOUND,
 		description: "Clients not found.",
 	})
+	@ApiBearerAuth()
 	@Get()
-	async findAll(@Res() res: Response) {
-		return super.findAll(res);
+	async findAll(@Res() res: Response, @Req() req: Request, @Ip() ip: string) {
+		return super.findAll(res, req, ip);
 	}
 
 	@ApiOperation({ summary: "Get a client by id" })
@@ -70,9 +79,15 @@ export class ClientsController extends AppController<
 		status: HttpStatus.NOT_FOUND,
 		description: "Client not found.",
 	})
+	@ApiBearerAuth()
 	@Get(":id")
-	async findOne(@Param("id") id: string, @Res() res: Response) {
-		return super.findOne(id, res);
+	async findOne(
+		@Param("id") id: string,
+		@Res() res: Response,
+		@Req() req: Request,
+		@Ip() ip: string,
+	) {
+		return super.findOne(id, res, req, ip);
 	}
 
 	@ApiOperation({ summary: "Update a client by id" })
@@ -84,15 +99,18 @@ export class ClientsController extends AppController<
 		status: HttpStatus.NOT_FOUND,
 		description: "Client not found.",
 	})
+	@ApiBearerAuth()
 	@Put(":id")
 	async update(
 		@Param("id") id: string,
 		@Body() updateClientDto: UpdateClientDto,
 		@Res() res: Response,
+		@Req() req: Request,
+		@Ip() ip: string,
 	) {
 		console.log("update");
 
-		return super.update(id, updateClientDto, res);
+		return super.update(id, updateClientDto, res, req, ip);
 	}
 
 	@ApiOperation({ summary: "Delete a client by id" })
@@ -104,9 +122,15 @@ export class ClientsController extends AppController<
 		status: HttpStatus.NOT_FOUND,
 		description: "Client not found.",
 	})
+	@ApiBearerAuth()
 	@Delete(":id")
-	async remove(@Param("id") id: string, @Res() res: Response) {
-		return super.remove(id, res);
+	async remove(
+		@Param("id") id: string,
+		@Res() res: Response,
+		@Req() req: Request,
+		@Ip() ip: string,
+	) {
+		return super.remove(id, res, req, ip);
 	}
 
 	// @ApiOperation({ summary: "Get all company clients" })

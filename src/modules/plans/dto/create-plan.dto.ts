@@ -66,12 +66,4 @@ export class CreatePlanDto {
 	@IsNotEmpty()
 	@IsBoolean()
 	active: boolean;
-
-	@ApiProperty({
-		description: "Indicates if the plan is in live mode or test mode",
-		example: true,
-	})
-	@IsNotEmpty()
-	@IsBoolean()
-	livemode: boolean;
 }
