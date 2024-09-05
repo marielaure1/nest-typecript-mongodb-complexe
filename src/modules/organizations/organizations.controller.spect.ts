@@ -3,7 +3,7 @@
 // import { OrganizationsService } from "@modules/organizations/organizations.service";
 // import { CreateOrganizationDto } from "@modules/organizations/dto/create-organization.dto";
 // import { UpdateOrganizationDto } from "@modules/organizations/dto/update-organization.dto";
-// import { Response } from "express";
+// import { FastifyReply } from "fastify";
 // import { ValidationError } from "class-validator";
 
 // describe("OrganizationsController", () => {
@@ -82,7 +82,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(201);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 201,
 // 			datas: { organizations: { _id: "1", ...dto } },
 // 			message: "organizations create with success",
@@ -105,7 +105,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { organizations: [validationError] },
 // 			message: "Validation errors occurred",
@@ -126,7 +126,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { organizations: "Internal server error" },
 // 			message: "An internal server error occurred",
@@ -144,7 +144,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { organizations: [mockOrganization] },
 // 			message: "organizations retrieve with success",
@@ -161,7 +161,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { organizations: "Not Found" },
 // 			message: "organizations not found",
@@ -180,7 +180,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { organizations: "Internal server error" },
 // 			message: "organizations internal server error",
@@ -198,7 +198,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { organizations: { _id: "1", ...mockOrganization } },
 // 			message: "organizations retrieve with success",
@@ -215,7 +215,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { organizations: "Not Found" },
 // 			message: "organizations not found",
@@ -234,7 +234,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { organizations: "Internal server error" },
 // 			message: "organizations internal server error",
@@ -256,7 +256,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { organizations: "Not Found" },
 // 			message: "organizations not found",
@@ -277,7 +277,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { organizations: "Internal server error" },
 // 			message: "organizations internal server error",
@@ -302,7 +302,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { organizations: [validationError] },
 // 			message: "Validation errors occurred",
@@ -320,7 +320,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { organizations: { removed: true } },
 // 			message: "organizations delete with success",
@@ -337,7 +337,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { organizations: {} },
 // 			message: "organizations not found",
@@ -356,7 +356,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { organizations: "Internal server error" },
 // 			message: "organizations internal server error",

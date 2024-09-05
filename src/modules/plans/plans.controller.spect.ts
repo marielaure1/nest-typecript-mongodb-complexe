@@ -3,7 +3,7 @@
 // import { PlansService } from "@modules/plans/plans.service";
 // import { CreatePlanDto } from "@modules/plans/dto/create-plan.dto";
 // import { UpdatePlanDto } from "@modules/plans/dto/update-plan.dto";
-// import { Response } from "express";
+// import { FastifyReply } from "fastify";
 // import { ValidationError } from "class-validator";
 
 // describe("PlansController", () => {
@@ -80,7 +80,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(201);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 201,
 // 			datas: { plans: { _id: "1", ...dto } },
 // 			message: "plans create with success",
@@ -103,7 +103,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { plans: [validationError] },
 // 			message: "Validation errors occurred",
@@ -124,7 +124,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { plans: "Internal server error" },
 // 			message: "An internal server error occurred",
@@ -142,7 +142,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { plans: [mockPlan] },
 // 			message: "plans retrieve with success",
@@ -159,7 +159,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { plans: "Not Found" },
 // 			message: "plans not found",
@@ -178,7 +178,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { plans: "Internal server error" },
 // 			message: "plans internal server error",
@@ -196,7 +196,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { plans: { _id: "1", ...mockPlan } },
 // 			message: "plans retrieve with success",
@@ -213,7 +213,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { plans: "Not Found" },
 // 			message: "plans not found",
@@ -232,7 +232,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { plans: "Internal server error" },
 // 			message: "plans internal server error",
@@ -254,7 +254,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { plans: "Not Found" },
 // 			message: "plans not found",
@@ -275,7 +275,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { plans: "Internal server error" },
 // 			message: "plans internal server error",
@@ -300,7 +300,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { plans: [validationError] },
 // 			message: "Validation errors occurred",
@@ -318,7 +318,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { plans: { removed: true } },
 // 			message: "plans delete with success",
@@ -335,7 +335,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { plans: {} },
 // 			message: "plans not found",
@@ -354,7 +354,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { plans: "Internal server error" },
 // 			message: "plans internal server error",

@@ -4,14 +4,7 @@ import { CreateEmployeeDto } from "@modules/employees/dto/create-employee.dto";
 import { UpdateEmployeeDto } from "@modules/employees/dto/update-employee.dto";
 import { EmployeeDocument } from "@modules/employees/entities/employee.entity";
 import { AppController } from "src/app.controller";
-import {
-	ApiTags,
-	ApiOperation,
-	ApiResponse,
-	ApiBearerAuth,
-} from "@nestjs/swagger";
-import { Response } from "express";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { ApiTags } from "@nestjs/swagger";
 import { Connection } from "mongoose";
 
 @ApiTags("employees")
@@ -23,9 +16,8 @@ export class EmployeesController extends AppController<
 > {
 	constructor(
 		private readonly employeesService: EmployeesService,
-		logHelper: LogHelper,
 		connection: Connection,
 	) {
-		super(employeesService, "employees", connection, logHelper);
+		super(employeesService, "employees", connection);
 	}
 }

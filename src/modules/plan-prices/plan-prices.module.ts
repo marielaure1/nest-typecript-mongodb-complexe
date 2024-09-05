@@ -4,8 +4,6 @@ import { PlanPricesController } from "@modules/plan-prices/plan-prices.controlle
 import { PlanPricesService } from "@modules/plan-prices/plan-prices.service";
 import { MailService } from "@providers/mail/mail.service";
 import { MailHelper } from "@providers/mail/helpers/mail.helper";
-import { LogsService } from "@modules/logs/logs.service";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
 
 @Module({
 	imports: [],
@@ -14,10 +12,8 @@ import { LogHelper } from "@modules/logs/helpers/log.helper";
 		PlanPricesService,
 		MailService,
 		MailHelper,
-		LogsService,
-		LogHelper,
 	],
-	exports: [PlanPricesModule],
+	exports: [],
 })
 export class PlanPricesModule {
 	configure(consumer: MiddlewareConsumer) {

@@ -10,10 +10,11 @@ import {
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import { Response } from "express";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
-import { log } from "console";
+import { FastifyReply } from "fastify";
+
+
 import { Connection } from "mongoose";
+import { LogsService } from "@modules/logs/logs.service";
 
 @ApiTags("teams")
 @Controller("teams")
@@ -24,9 +25,8 @@ export class TeamsController extends AppController<
 > {
 	constructor(
 		private readonly teamsService: TeamsService,
-		logHelper: LogHelper,
 		connection: Connection,
 	) {
-		super(teamsService, "teams", connection, logHelper);
+		super(teamsService, "teams", connection);
 	}
 }

@@ -22,7 +22,7 @@ import { MailService } from "@src/providers/mail/mail.service";
 				from: '"No Reply" <noreply@NOM.com>',
 			},
 			template: {
-				dir: join(__dirname, "../../services/mail/templates"),
+				dir: join(__dirname, "../../../views/mails"),
 				adapter: new HandlebarsAdapter(),
 				options: {
 					strict: true,
@@ -31,6 +31,6 @@ import { MailService } from "@src/providers/mail/mail.service";
 		}),
 	],
 	providers: [MailService, MailHelper],
-	exports: [MailerModule],
+	exports: [MailService, MailHelper],
 })
 export class MailModule {}

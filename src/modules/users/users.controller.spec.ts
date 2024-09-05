@@ -3,7 +3,7 @@
 // import { UsersService } from "@modules/users/users.service";
 // import { CreateUserDto } from "@modules/users/dto/create-user.dto";
 // import { UpdateUserDto } from "@modules/users/dto/update-user.dto";
-// import { Response } from "express";
+// import { FastifyReply } from "fastify";
 // import { ValidationError } from "class-validator";
 // import { UserRoleEnum } from "@enums/user-role.enum";
 // import { UserStatusEnum } from "@enums/user-status.enum";
@@ -102,7 +102,7 @@
 
 // 		expect(service.create).toHaveBeenCalledWith(dto);
 // 		expect(res.status).toHaveBeenCalledWith(201);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 201,
 // 			data: { user: createdUser },
 // 			message: "User created successfully",
@@ -131,7 +131,7 @@
 // 			await controller.create(dto, res);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(400);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 400,
 // 				message: "Validation failed",
 // 				success: false,
@@ -160,7 +160,7 @@
 // 			await controller.create(dto, res);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(400);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 400,
 // 				message: "Validation failed",
 // 				success: false,
@@ -189,7 +189,7 @@
 // 			await controller.create(dto, res);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(409);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 409,
 // 				message: "Email already exists",
 // 				success: false,
@@ -218,7 +218,7 @@
 // 			await controller.create(dto, res);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(422);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 422,
 // 				message:
 // 					"Validation failed: Email does not match the required pattern",
@@ -249,7 +249,7 @@
 // 			await controller.create(dto, res);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(422);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 422,
 // 				message:
 // 					"Validation failed: Password does not match the required pattern",
@@ -280,7 +280,7 @@
 // 			await controller.create(dto, res);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(422);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 422,
 // 				message: "Validation failed: Invalid status",
 // 				success: false,
@@ -310,7 +310,7 @@
 // 			await controller.create(dto, res);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(422);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 422,
 // 				message: "Validation failed: Invalid role",
 // 				success: false,
@@ -340,7 +340,7 @@
 // 			await controller.create(dto, res);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(500);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 500,
 // 				message: "Internal Server Error",
 // 				success: false,
@@ -375,7 +375,7 @@
 
 // 		expect(service.findAll).toHaveBeenCalled();
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			data: { users },
 // 			message: "Users retrieved successfully",
@@ -390,7 +390,7 @@
 
 // 		expect(service.findAll).toHaveBeenCalled();
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			message: "Users not found",
 // 			error: "Not found",
@@ -407,7 +407,7 @@
 // 			await controller.findAll(res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(500);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 500,
 // 				message: "Internal Server Error",
 // 				success: false,
@@ -433,7 +433,7 @@
 
 // 		expect(service.findOne).toHaveBeenCalledWith("1");
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			data: { user },
 // 			message: "User retrieved successfully",
@@ -450,7 +450,7 @@
 // 			await controller.findOne("invalid-id", res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(400);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 400,
 // 				message: "Invalid ID format",
 // 				success: false,
@@ -465,7 +465,7 @@
 
 // 		expect(service.findOne).toHaveBeenCalledWith("1");
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			message: "User not found",
 // 			error: "Not Found",
@@ -482,7 +482,7 @@
 // 			await controller.findOne("1", res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(500);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 500,
 // 				message: "Internal Server Error",
 // 				success: false,
@@ -499,7 +499,7 @@
 // 			await controller.findOne("1", res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(500);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 500,
 // 				message: "Database Error",
 // 				success: false,
@@ -528,7 +528,7 @@
 
 // 		expect(service.update).toHaveBeenCalledWith("1", updateUserDto);
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			data: { user: updatedUser },
 // 			message: "User updated successfully",
@@ -554,7 +554,7 @@
 // 			);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(400);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 400,
 // 				message: "Invalid ID format",
 // 				success: false,
@@ -574,7 +574,7 @@
 
 // 		expect(service.update).toHaveBeenCalledWith("1", updateUserDto);
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			error: "Not Found",
 // 			message: "User not found",
@@ -596,7 +596,7 @@
 // 			await controller.update("1", updateUserDto, res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(422);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 422,
 // 				message: "Validation failed",
 // 				success: false,
@@ -619,7 +619,7 @@
 // 			await controller.update("1", updateUserDto, res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(500);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 500,
 // 				message: "Internal Server Error",
 // 				success: false,
@@ -641,7 +641,7 @@
 // 			await controller.update("1", updateUserDto, res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(500);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 500,
 // 				message: "Database Error",
 // 				success: false,
@@ -672,7 +672,7 @@
 // 	// 	await controller.remove("1", res);
 
 // 	// 	expect(res.status).toHaveBeenCalledWith(200);
-// 	// 	expect(res.json).toHaveBeenCalledWith({
+// 	// 	expect(res.send).toHaveBeenCalledWith({
 // 	// 		code: 200,
 // 	// 		datas: { clients: { removed: true } },
 // 	// 		message: "clients delete with success",
@@ -690,7 +690,7 @@
 // 			await controller.remove("invalid-id", res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(400);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 400,
 // 				message: "Invalid ID format",
 // 				success: false,
@@ -705,7 +705,7 @@
 
 // 		expect(service.remove).toHaveBeenCalledWith("1");
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			message: "User not found",
 // 			success: false,
@@ -721,7 +721,7 @@
 // 			await controller.remove("1", res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(500);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 500,
 // 				message: "Internal Server Error",
 // 				success: false,
@@ -738,7 +738,7 @@
 // 			await controller.remove("1", res as Response);
 // 		} catch (error) {
 // 			expect(res.status).toHaveBeenCalledWith(500);
-// 			expect(res.json).toHaveBeenCalledWith({
+// 			expect(res.send).toHaveBeenCalledWith({
 // 				code: 500,
 // 				message: "Database Error",
 // 				success: false,

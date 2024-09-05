@@ -1,3 +1,5 @@
+import { UserDocument } from "@modules/users/entities/user.entity";
+import { LogsService } from "@modules/logs/logs.service";
 import {
 	Body,
 	Controller,
@@ -9,6 +11,7 @@ import {
 	Put,
 	Req,
 	Res,
+	UseInterceptors,
 } from "@nestjs/common";
 import { UsersService } from "@modules/users/users.service";
 import { ClientsService } from "@modules/clients/clients.service";
@@ -16,7 +19,7 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Responses } from "@helpers/responses.helper";
 import { CreateAuthClientDto } from "@modules/auth/dto/create-auth-client.dto";
 import { CreateAuthOrganizationDto } from "@modules/auth/dto/create-auth-organization.dto";
-import { Response } from "express";
+import { FastifyReply, FastifyRequest } from "fastify";
 import { NotificationHelper } from "@helpers/notification.helper";
 import Hash from "@helpers/hash.helper";
 import { Token } from "@helpers/token.helper";
@@ -24,70 +27,138 @@ import { UserStatusEnum } from "@enums/user-status.enum";
 import { MailHelper } from "@src/providers/mail/helpers/mail.helper";
 import { TokenTypeEnum } from "@enums/token-type.enum";
 import { LoginUserDto } from "@modules/auth/dto/login-user.dto";
-import { RefreshTokenDto } from "./dto/refresh-token.dto";
-import { ResetPasswordDto } from "./dto/reset-password.dto";
-import { ForgotPasswordDto } from "./dto/forgot-password.dto";
-import { LogLevelEnum } from "@enums/log-level.enum";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { RefreshTokenDto } from "@modules/auth/dto/refresh-token.dto";
+import { ResetPasswordDto } from "@modules/auth/dto/reset-password.dto";
+import { ForgotPasswordDto } from "@modules/auth/dto/forgot-password.dto";
+import { LogLevelEnum } from "@modules/logs/enums/log-level.enum";
 import { OrganizationsService } from "@modules/organizations/organizations.service";
-import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
+import { EmployeesService } from "@modules/employees/employees.service";
 import { UserRoleEnum } from "@enums/user-role.enum";
 import { StringHelper } from "@helpers/string.helper";
-import { Connection } from "mongoose";
+import { Connection, Document } from "mongoose";
+import { CryptoHelper } from "@helpers/crypto.helper";
+import { LogInterceptor } from "@interceptors/log.interceptor";
+import { LogsHelper } from "@modules/logs/helpers/logs.helper";
+import { last } from "rxjs";
+import { UserHelper } from "@modules/users/helpers/user.helper";
+import { BookerEmployeeDocument } from "@modules/booker-employees/entities/booker-employee.entity";
+import { ClientDocument } from "@modules/clients/entities/client.entity";
+import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
+import { EmployeeDocument } from "@modules/employees/entities/employee.entity";
 
 @ApiTags("auth")
 @Controller("auth")
+@UseInterceptors(LogInterceptor)
 export class AuthController {
 	constructor(
 		private readonly userService: UsersService,
 		private readonly clientService: ClientsService,
 		private readonly bookerEmployeesService: BookerEmployeesService,
+		private readonly employeesService: EmployeesService,
 		private readonly organizationsService: OrganizationsService,
 		private readonly mailHelper: MailHelper,
-		private readonly logHelper: LogHelper,
 		private readonly connection: Connection,
-	) {
-		console.log("LogHelper:", this.logHelper);
-	}
+		private readonly logsHelper: LogsHelper,
+	) {}
 
 	/**
-	 * Register a new client
-	 * @param createAuthClientDto : CreateAuthClientDto
-	 * @param res : Response
-	 * @returns : Response
+	 * Registers a new client. This involves creating both a user and client entity within a transaction.
+	 *
+	 * @param createAuthClientDto - The data transfer object containing client information such as name, email, phone number, and password.
+	 * @param res - The response object used to send the result back to the client.
+	 * @param req - The request object that holds metadata like headers for tracing and session handling.
+	 * @param ip - The client's IP address, used for logging and security purposes.
+	 *
+	 * @returns A JSON response containing the user and client data or an error message if the process fails.
 	 */
 	@ApiOperation({ summary: "Register a new client" })
 	@ApiResponse({
 		status: HttpStatus.CREATED,
 		description: "The client has been successfully registered.",
+		content: {
+			"application/json": {
+				example: {
+					data: {
+						user: {
+							id: "123",
+							email: "user@example.com",
+							phone: "+1234567890",
+							status: UserStatusEnum.AVAILABLE,
+							isActive: true,
+							isVerified: false,
+							lastConnection: null,
+							role: UserRoleEnum.CLIENT,
+						},
+						client: {
+							id: "456",
+							firstName: "John",
+							lastName: "Doe",
+							address1: "123 Main St",
+							address2: "Apt 4B",
+							postalCode: "12345",
+							city: "New York",
+							country: "USA",
+							notificationEmail: true,
+							notificationSms: true,
+						},
+					},
+					message: "Client registration completed successfully.",
+				},
+			},
+		},
 	})
 	@ApiResponse({
 		status: HttpStatus.BAD_REQUEST,
 		description: "Bad Request - Invalid input data.",
+		content: {
+			"application/json": { example: { error: "Invalid email format." } },
+		},
 	})
 	@ApiResponse({
 		status: HttpStatus.CONFLICT,
 		description: "Conflict - Email or phone number already exists.",
+		content: {
+			"application/json": {
+				example: {
+					error: "An account with this email already exists.",
+				},
+			},
+		},
 	})
 	@ApiResponse({
 		status: HttpStatus.UNPROCESSABLE_ENTITY,
 		description: "Unprocessable Entity - Phone number is required.",
+		content: {
+			"application/json": {
+				example: { error: "Phone number is required." },
+			},
+		},
 	})
 	@ApiResponse({
 		status: HttpStatus.INTERNAL_SERVER_ERROR,
 		description: "Internal Server Error - Something went wrong.",
+		content: {
+			"application/json": {
+				example: { error: "Server error, please try again later." },
+			},
+		},
 	})
 	@Post("register/client")
 	async registerClient(
 		@Body() createAuthClientDto: CreateAuthClientDto,
-		@Res() res: Response,
-		@Req() req: Request,
+		@Res() res: FastifyReply,
+		@Req() req: FastifyRequest,
 		@Ip() ip: string,
 	) {
 		const path = "register";
 		const method = "Post";
 		const session = await this.connection.startSession();
 		session.startTransaction();
+
+		const requestId =
+			req.headers["x-request-id"] || CryptoHelper.generateRequestId();
+		const traceId =
+			req.headers["x-trace-id"] || CryptoHelper.generateTraceId();
 
 		try {
 			// Check if phone number is required
@@ -101,6 +172,8 @@ export class AuthController {
 				createAuthClientDto.password,
 			);
 
+			createAuthClientDto.role = UserRoleEnum.CLIENT;
+
 			// Create user and client inside the session
 			const user = await this.userService.create(
 				createAuthClientDto,
@@ -110,14 +183,13 @@ export class AuthController {
 			const client = await this.clientService.create(
 				{
 					...createAuthClientDto,
-					userId: user?._id?.toString(),
+					userId: user._id?.toString(),
 				},
 				session,
 			);
 
 			// Generate token for email confirmation
 			const payload = { sub: user._id, email: user.email };
-
 			const token = Token.generateToken(payload);
 
 			// Email confirmation for the client
@@ -129,16 +201,20 @@ export class AuthController {
 				},
 			});
 
-			// Log the registration
-			await this.logHelper.log({
+			await this.logsHelper.logInfo({
 				ip,
-				user: req["user"],
-				userInfos: req["userInfos"],
-				level: LogLevelEnum.INFO,
-				message: "Client successfully registered",
-				context: `AuthController > ${path}: `,
+				userId: user._id.toString(),
+				email: user.email,
+				message: "Client confirmation email sent",
+				context: `AuthController > ${path}`,
+				metadata: {
+					requestId,
+					traceId,
+					clientId: client._id.toString(),
+				},
 			});
 
+			// Commit the transaction
 			await session.commitTransaction();
 
 			return Responses.getResponse({
@@ -153,8 +229,258 @@ export class AuthController {
 				},
 			});
 		} catch (error) {
+			// Abort the transaction
 			await session.abortTransaction();
 
+			console.error(`AuthController > ${path} : `, error);
+
+			if (error.code === 11000) {
+				// MongoDB duplicate key error
+				const field = error.message.includes("email")
+					? "email"
+					: "phone number";
+				return Responses.getResponse({
+					res,
+					path,
+					method,
+					code: HttpStatus.CONFLICT,
+					subject: "auth",
+					error: `An account with this ${field} already exists.`,
+				});
+			} else if (error.message === "Phone number is required") {
+				return Responses.getResponse({
+					res,
+					path,
+					method,
+					code: HttpStatus.UNPROCESSABLE_ENTITY,
+					subject: "auth",
+					error: "Phone number is required",
+				});
+			}
+
+			return Responses.getResponse({
+				res,
+				path,
+				method,
+				code: HttpStatus.INTERNAL_SERVER_ERROR,
+				subject: "auth",
+				error: "An error occurred while creating the account",
+			});
+		} finally {
+			session.endSession();
+		}
+	}
+
+	/**
+	 * Register a new organization
+	 *
+	 * This endpoint allows you to register a new organization along with the
+	 * super admin user and an associated booker employee. The method
+	 * handles transaction management to ensure that all entities are created
+	 * successfully or none at all, ensuring data consistency.
+	 *
+	 * @param createAuthOrganizationDto - Data Transfer Object containing all
+	 * necessary data to create an organization, its super admin, and an associated
+	 * booker employee.
+	 * @param res - The response object used to return the result of the operation.
+	 * @returns A JSON response containing the created organization and user, or an error message.
+	 */
+	@ApiOperation({ summary: "Register a new organization" })
+	@ApiResponse({
+		status: HttpStatus.CREATED,
+		description: "The organization has been successfully registered.",
+		content: {
+			"application/json": {
+				example: {
+					data: {
+						organization: {
+							id: "org_001",
+							name: "Tech Innovators Inc.",
+							managerId: "manager_001",
+						},
+						user: {
+							id: "123",
+							email: "user@example.com",
+							phone: "+1234567890",
+							status: UserStatusEnum.AVAILABLE,
+							isActive: true,
+							isVerified: false,
+							lastConnection: null,
+							role: UserRoleEnum.CLIENT,
+						},
+					},
+					message:
+						"Organization registration completed successfully.",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.BAD_REQUEST,
+		description: "Bad Request - Invalid input data.",
+		content: {
+			"application/json": {
+				example: {
+					error: "Invalid data provided. Please check your input and try again.",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.CONFLICT,
+		description: "Conflict - Email or phone number already exists.",
+		content: {
+			"application/json": {
+				example: {
+					error: "An account with this email already exists.",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.UNPROCESSABLE_ENTITY,
+		description: "Unprocessable Entity - Phone number is required.",
+		content: {
+			"application/json": {
+				example: {
+					error: "Phone number is required.",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: "Internal Server Error - Something went wrong.",
+		content: {
+			"application/json": {
+				example: {
+					error: "An error occurred while creating the account.",
+				},
+			},
+		},
+	})
+	@Post("register/organization")
+	async registerOrganization(
+		@Body() createAuthOrganizationDto: CreateAuthOrganizationDto,
+		@Res() res: FastifyReply,
+		@Req() req: FastifyRequest,
+		@Ip() ip: string,
+	) {
+		const path = "registerOrganization";
+		const method = "Post";
+		const session = await this.connection.startSession();
+		session.startTransaction();
+
+		console.log(CreateAuthOrganizationDto);
+
+		try {
+			createAuthOrganizationDto.password = await Hash.hashData(
+				createAuthOrganizationDto.password,
+			);
+
+			// Create user
+			let user = await this.userService.create({
+				...createAuthOrganizationDto,
+				isActive: true,
+				isVerified: false,
+				role: UserRoleEnum.ORGANIZATION_SUPER_ADMIN,
+				status: UserStatusEnum.CREATE_PASSWORD,
+				lastConnection: null,
+			});
+
+			user = user.toObject();
+			delete user.password;
+
+			if (!user) {
+				throw new Error("User could not be created");
+			}
+
+			// Create employee
+			const employee = await this.employeesService.create({
+				...createAuthOrganizationDto,
+				userId: user._id.toString(),
+			});
+
+			if (!employee) {
+				throw new Error("Employee could not be created");
+			}
+
+			// Create organization
+			const organization = await this.organizationsService.create({
+				...createAuthOrganizationDto,
+				managerId: employee._id.toString(),
+			});
+
+			if (!organization) {
+				throw new Error("Organization could not be created");
+			}
+
+			// Generate token for email confirmation
+			const payload = { sub: user._id, email: user.email };
+			const token = Token.generateToken(payload);
+
+			// Email confirmation for the organization
+			await this.mailHelper.sendConfirmAccountOrganization({
+				to: [user.email],
+				templateDatas: {
+					organizationName: organization.name,
+					userEmail: user.email,
+					token: token,
+				},
+			});
+
+			// Log mail for confirmation of the organization
+			await this.logsHelper.logInfo({
+				ip,
+				userId: user._id.toString(),
+				email: user.email,
+				message: "Organization confirmation email sent",
+				context: `AuthController > ${path}`,
+				metadata: {
+					requestId: req.requestId,
+					traceId: req.traceId,
+					organization: organization._id.toString(),
+				},
+			});
+
+			// Email for initial password
+			await this.mailHelper.sendInitPasswordEmail({
+				to: [user.email],
+				templateDatas: {
+					token: token,
+				},
+			});
+
+			// Log email for initial password
+			await this.logsHelper.logInfo({
+				ip,
+				userId: user._id.toString(),
+				email: user.email,
+				message: "Organisation Manager initial password email sent",
+				context: `AuthController > ${path}`,
+				metadata: {
+					requestId: req.requestId,
+					traceId: req.traceId,
+					organization: organization._id.toString(),
+				},
+			});
+
+			await session.commitTransaction();
+
+			return Responses.getResponse({
+				res,
+				path,
+				method,
+				code: HttpStatus.CREATED,
+				subject: "auth",
+				data: {
+					user,
+					employee,
+					organization,
+				},
+			});
+		} catch (error) {
+			await session.abortTransaction();
 			console.error(`AuthController > ${path} : `, error);
 
 			if (
@@ -202,268 +528,241 @@ export class AuthController {
 	}
 
 	/**
-	 * Register a new client
-	 * @param createAuthClientDto : CreateAuthClientDto
-	 * @param res : Response
-	 * @returns : Response
+	 * Sign in a user.
+	 *
+	 * This endpoint allows a user to sign in by providing their email and password.
+	 * The method handles user authentication, checks user status, and generates
+	 * the necessary access and refresh tokens.
+	 *
+	 * @param loginUserDto - Data Transfer Object containing user's email and password.
+	 * @param res - The response object used to return the result of the operation.
+	 * @returns A JSON response containing access and refresh tokens, or an error message.
 	 */
-	@ApiOperation({ summary: "Register a new organization" })
-	@ApiResponse({
-		status: HttpStatus.CREATED,
-		description: "The organization has been successfully registered.",
-	})
-	@ApiResponse({
-		status: HttpStatus.BAD_REQUEST,
-		description: "Bad Request - Invalid input data.",
-	})
-	@ApiResponse({
-		status: HttpStatus.CONFLICT,
-		description: "Conflict - Email or phone number already exists.",
-	})
-	@ApiResponse({
-		status: HttpStatus.UNPROCESSABLE_ENTITY,
-		description: "Unprocessable Entity - Phone number is required.",
-	})
-	@ApiResponse({
-		status: HttpStatus.INTERNAL_SERVER_ERROR,
-		description: "Internal Server Error - Something went wrong.",
-	})
-	@Post("register/organization")
-	async registerOrganization(
-		@Body() createAuthOrganizationDto: CreateAuthOrganizationDto,
-		@Res() res: Response,
-		@Req() req: Request,
-		@Ip() ip: string,
-	) {
-		const path = "registerOrganization";
-		const method = "Post";
-
-		try {
-			// Create organization
-			const organization = await this.organizationsService.create(
-				createAuthOrganizationDto.organization,
-			);
-
-			if (!organization) {
-				throw new Error("Organization could not be created");
-			}
-
-			createAuthOrganizationDto.user.role =
-				UserRoleEnum.ORGANIZATION_SUPER_ADMIN;
-			createAuthOrganizationDto.user.password =
-				StringHelper.generatePassword();
-
-			// Create user
-			const user = await this.userService.create(
-				createAuthOrganizationDto.user,
-			);
-
-			if (!user) {
-				organization.deleteOne();
-				throw new Error("User could not be created");
-			}
-
-			// Create booker employee
-			const bookerEmployee = await this.bookerEmployeesService.create(
-				createAuthOrganizationDto.bookerEmployee,
-			);
-
-			if (!bookerEmployee) {
-				organization.deleteOne();
-				user.deleteOne();
-				throw new Error("Booker employee could not be created");
-			}
-
-			// user = await this.userService.findOne(user?._id?.toString());
-
-			// Generate token for email confirmation
-			const payload = { sub: user._id, email: user.email };
-
-			const token = Token.generateToken(payload);
-
-			// Email confirmation for the organization
-			await this.mailHelper.sendConfirmAccountOrganization({
-				to: [user.email],
-				templateDatas: {
-					organizationName: organization.name,
-					userEmail: user.email,
-					token: token,
-				},
-			});
-
-			// Email mot de passe for the organization
-			await this.mailHelper.sendInitPasswordEmail({
-				to: [user.email],
-				templateDatas: {
-					token: token,
-				},
-			});
-
-			// Log the registration
-			this.logHelper.log({
-				ip,
-				user: req["user"],
-				userInfos: req["userInfos"],
-				level: LogLevelEnum.INFO,
-				message: "Organization successfully registered",
-				context: `AuthController > ${path}: `,
-			});
-
-			return Responses.getResponse({
-				res,
-				path,
-				method,
-				code: HttpStatus.CREATED,
-				subject: "auth",
-				data: {
-					user,
-					organization,
-				},
-			});
-		} catch (error) {
-			console.error(`AuthController > ${path} : `, error);
-
-			if (
-				error.message.includes("E11000 duplicate key error collection")
-			) {
-				let errorMessage = "An account already exists";
-
-				if (error.message.includes("email_1")) {
-					errorMessage = "An account with this email already exists";
-				} else if (error.message.includes("phone_1")) {
-					errorMessage =
-						"An account with this phone number already exists";
-				}
-
-				return Responses.getResponse({
-					res,
-					path,
-					method,
-					code: HttpStatus.CONFLICT,
-					subject: "auth",
-					error: errorMessage,
-				});
-			} else if (error.message === "Phone number is required") {
-				return Responses.getResponse({
-					res,
-					path,
-					method,
-					code: HttpStatus.UNPROCESSABLE_ENTITY,
-					subject: "auth",
-					error: "Phone number is required",
-				});
-			}
-
-			return Responses.getResponse({
-				res,
-				path,
-				method,
-				code: HttpStatus.INTERNAL_SERVER_ERROR,
-				subject: "auth",
-				error: "An error occurred while creating the account",
-			});
-		}
-	}
-
-	/**
-	 * Sign in an user
-	 * @param loginUserDto : LoginUserDto
-	 * @param res : Response
-	 * @returns : Response
-	 */
-	@ApiOperation({ summary: "Sign in an user" })
+	@ApiOperation({ summary: "Sign in a user" })
 	@ApiResponse({
 		status: HttpStatus.OK,
 		description: "The user has been successfully authenticated.",
+		content: {
+			"application/json": {
+				example: {
+					access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+					refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+				},
+			},
+		},
 	})
 	@ApiResponse({
 		status: HttpStatus.BAD_REQUEST,
 		description: "Bad Request - Invalid input data.",
+		content: {
+			"application/json": {
+				example: {
+					error: "Invalid data provided. Please check your input.",
+				},
+			},
+		},
 	})
 	@ApiResponse({
 		status: HttpStatus.NOT_FOUND,
 		description: "Not Found - User not found.",
+		content: {
+			"application/json": {
+				example: { error: "User not found." },
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.UNAUTHORIZED,
+		description: "Unauthorized - Invalid credentials.",
+		content: {
+			"application/json": {
+				example: { error: "Invalid credentials." },
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.FORBIDDEN,
+		description: "Forbidden - User suspended or banned.",
+		content: {
+			"application/json": {
+				example: { error: "User suspended or banned." },
+			},
+		},
 	})
 	@ApiResponse({
 		status: HttpStatus.INTERNAL_SERVER_ERROR,
 		description: "Internal Server Error - Something went wrong.",
+		content: {
+			"application/json": {
+				example: { error: "An error occurred while logging in." },
+			},
+		},
 	})
 	@Post("login")
 	async login(
 		@Body() loginUserDto: LoginUserDto,
-		@Res() res: Response,
-		@Req() req: Request,
+		@Res() res: FastifyReply,
+		@Req() req: FastifyRequest,
 		@Ip() ip: string,
 	) {
 		const path = "login";
 		const method = "Post";
+		const session = await this.connection.startSession();
+		session.startTransaction();
 
 		try {
 			// Find user
-			const user = await this.userService.findWhere({
-				where: {
+			const user = await this.userService.findOne(
+				{
 					email: loginUserDto.email,
 				},
-				find: "+password",
-			});
+				session,
+				"+password",
+			);
 
-			if (!user || user.length === 0) {
+			if (!user) {
 				throw new Error("User not found");
 			}
 
 			// Compare password
 			const comparePassword = await Hash.hashCompareData(
 				loginUserDto.password,
-				user[0].password,
+				user.password,
 			);
 
 			if (!comparePassword) {
 				throw new Error("Invalid credentials");
 			}
 
-			// Find client
-			const client = await this.clientService.findWhere({
-				where: {
-					userId: user[0]._id.toString(),
-				},
-			});
+			let userInfo:
+				| BookerEmployeeDocument
+				| EmployeeDocument
+				| ClientDocument = null;
 
-			if (!client || client.length === 0) {
-				throw new Error("Client not found");
+			const userType = UserHelper.getUserType(user.role);
+
+			if (userType === "Booker") {
+				// Find Booker employee
+				userInfo = await this.bookerEmployeesService.findOne(
+					{ userId: user._id.toString() },
+					session,
+				);
+
+				if (!userInfo) {
+					throw new Error("Booker employee not found");
+				}
+			} else if (userType === "Employee") {
+				// Find Employee
+				userInfo = await this.employeesService.findOne(
+					{ userId: user._id.toString() },
+					session,
+				);
+
+				if (!userInfo) {
+					throw new Error("Employee not found");
+				}
+			} else {
+				// Find Client
+				userInfo = await this.clientService.findOne(
+					{ userId: user._id.toString() },
+					session,
+				);
+
+				if (!userInfo) {
+					throw new Error("Client not found");
+				}
 			}
 
 			// Check user status
-			if (user[0].status.includes(UserStatusEnum.NOT_VERIFIED)) {
+			if (!user.isVerified) {
 				const payload = {
-					sub: user[0]._id,
-					email: user[0].email,
+					sub: user._id,
+					email: user.email,
 					type: TokenTypeEnum.CONFIRMATION_ACCOUNT,
 				};
 				const tokenConfirmation = Token.generateToken(payload);
 
+				// Send confirmation email
 				await this.mailHelper.sendConfirmAccountClient({
-					to: [user[0].email],
+					to: [user.email],
 					templateDatas: {
-						firstName: client[0].firstName,
+						firstName: userInfo.firstName,
 						token: tokenConfirmation,
 					},
 				});
 
-				throw new Error("Invalid token");
+				await this.logsHelper.logInfo({
+					ip,
+					userId: user._id.toString(),
+					email: user.email,
+					message: `${userType} Account confirmation email sent`,
+					context: `AuthController > ${path}`,
+					metadata: {
+						requestId: req.requestId,
+						traceId: req.traceId,
+						userInfo: userInfo._id.toString(),
+					},
+				});
+
+				throw new Error("Account not verified");
+			}
+
+			if (user.status === UserStatusEnum.CREATE_PASSWORD) {
+				const payload = {
+					sub: user._id,
+					email: user.email,
+					type: TokenTypeEnum.INIT_PASSWORD,
+				};
+				const tokenCreatePassword = Token.generateToken(payload);
+
+				// Send initial password email
+				await this.mailHelper.sendInitPasswordEmail({
+					to: [user.email],
+					templateDatas: {
+						token: tokenCreatePassword,
+					},
+				});
+
+				await this.logsHelper.logInfo({
+					ip,
+					userId: user._id.toString(),
+					email: user.email,
+					message: `${userType} Initial password email sent`,
+					context: `AuthController > ${path}`,
+					metadata: {
+						requestId: req.requestId,
+						traceId: req.traceId,
+						userInfo: userInfo._id.toString(),
+					},
+				});
+
+				throw new Error("Account not verified");
 			}
 
 			if (
-				user[0].status.some((status) =>
-					[UserStatusEnum.BANNED, UserStatusEnum.SUSPENDED].includes(
-						status,
-					),
-				)
+				user.status === UserStatusEnum.SUSPENDED ||
+				user.status === UserStatusEnum.BANNED
 			) {
 				throw new Error("User suspended or banned");
 			}
 
+			const userUpdated = await this.userService.update(
+				user._id.toString(),
+				{
+					isActive: true,
+					lastConnection: new Date(),
+				},
+			);
+
+			if (!userUpdated) {
+				throw new Error("User could not be updated");
+			}
+
 			// Generate tokens
-			const payload_token = { sub: user[0]._id, email: user[0].email };
+			const payload_token = {
+				sub: user._id,
+				email: user.email,
+			};
 
 			const accessToken = Token.generateAccessToken({
 				...payload_token,
@@ -474,16 +773,7 @@ export class AuthController {
 				type: TokenTypeEnum.REFRESH,
 			});
 
-			// Log the login
-			this.logHelper.log({
-				ip: ip,
-				user: req["user"],
-				userInfos: req["userInfos"],
-				level: LogLevelEnum.INFO,
-				message: "User successfully registered",
-				context: `AuthController > ${path}: `,
-				metadata: { user, client },
-			});
+			await session.commitTransaction();
 
 			return Responses.getResponse({
 				res,
@@ -497,25 +787,34 @@ export class AuthController {
 				},
 			});
 		} catch (error) {
+			await session.abortTransaction();
 			console.error(`AuthController > ${path} : `, error);
 
-			if (error.message === "User not found") {
+			if (
+				error.message === "User not found" ||
+				error.message === "Client not found" ||
+				error.message === "Booker employee not found" ||
+				error.message === "Employee not found"
+			) {
 				return Responses.getResponse({
 					res,
 					path,
 					method,
 					code: HttpStatus.NOT_FOUND,
 					subject: "auth",
-					error: "User not found",
+					error: error.message,
 				});
-			} else if (error.message === "Invalid credentials") {
+			} else if (
+				error.message === "Account not verified" ||
+				error.message === "Invalid credentials"
+			) {
 				return Responses.getResponse({
 					res,
 					path,
 					method,
 					code: HttpStatus.UNAUTHORIZED,
 					subject: "auth",
-					error: "Invalid credentials",
+					error: error.message,
 				});
 			} else if (error.message === "User suspended or banned") {
 				return Responses.getResponse({
@@ -524,7 +823,7 @@ export class AuthController {
 					method,
 					code: HttpStatus.FORBIDDEN,
 					subject: "auth",
-					error: "User suspended or banned",
+					error: error.message,
 				});
 			}
 
@@ -536,6 +835,8 @@ export class AuthController {
 				subject: "auth",
 				error: "An error occurred while logging in",
 			});
+		} finally {
+			session.endSession();
 		}
 	}
 
@@ -567,14 +868,13 @@ export class AuthController {
 		description: "Internal Server Error - Something went wrong.",
 	})
 	@Get("confirm/:token")
-	async confirm(
-		@Param("token") token: string,
-		@Res() res: Response,
-		@Req() req: Request,
-		@Ip() ip: string,
-	) {
+	async confirm(@Param("token") token: string, @Res() res: FastifyReply) {
 		const path = "confirm";
 		const method = "Get";
+		const session = await this.connection.startSession();
+		session.startTransaction();
+
+		console.log("token", token);
 
 		try {
 			// Verify token
@@ -595,29 +895,24 @@ export class AuthController {
 			}
 
 			// Find user
-			const user = await this.userService.findWhere({
-				where: {
-					_id: payload.sub.toString(),
-					email: payload.email,
-				},
+			const user = await this.userService.findOne({
+				_id: payload.sub.toString(),
 			});
 
-			if (!user || user.length === 0) {
+			if (!user) {
 				throw new Error("User not found");
 			}
 
-			if (!user[0].status.includes(UserStatusEnum.NOT_VERIFIED)) {
+			if (!user.isVerified) {
 				throw new Error("Invalid token");
 			}
 
 			// Find client
-			const client = await this.clientService.findWhere({
-				where: {
-					userId: user[0]._id.toString(),
-				},
+			const client = await this.clientService.findOne({
+				userId: user._id.toString(),
 			});
 
-			if (!client || client.length === 0) {
+			if (!client) {
 				throw new Error("Client not found");
 			}
 
@@ -626,13 +921,13 @@ export class AuthController {
 
 			if (isExpired) {
 				const newToken = await Token.generateToken({
-					id: user[0]._id,
-					email: user[0].email,
+					id: user._id,
+					email: user.email,
 				});
 
 				// Email confirmation for the client
 				await this.mailHelper.sendConfirmAccountClient({
-					to: [user[0].email],
+					to: [user.email],
 					templateDatas: {
 						firstName: client[0].firstName,
 						token: newToken,
@@ -643,20 +938,11 @@ export class AuthController {
 			}
 
 			// Update user status
-			await this.userService.update(user[0].id, {
-				status: [UserStatusEnum.ACTIVE],
+			await this.userService.update(user.id, {
+				status: UserStatusEnum.AVAILABLE,
 			});
 
-			// Log the confirmation
-			this.logHelper.log({
-				ip: ip,
-				user: req["user"],
-				userInfos: req["userInfos"],
-				level: LogLevelEnum.INFO,
-				message: "User successfully confirmed account",
-				context: `AuthController > ${path}: `,
-				metadata: { user, client },
-			});
+			await session.commitTransaction();
 
 			return Responses.getResponse({
 				res,
@@ -667,6 +953,7 @@ export class AuthController {
 				data: {},
 			});
 		} catch (error) {
+			await session.abortTransaction();
 			console.error(`AuthController > ${path} : `, error);
 
 			if (
@@ -709,6 +996,8 @@ export class AuthController {
 				subject: "auth",
 				error: "An error occurred while confirming the account",
 			});
+		} finally {
+			session.endSession();
 		}
 	}
 
@@ -738,11 +1027,13 @@ export class AuthController {
 	@Post("refresh-token")
 	async refreshToken(
 		@Body() refreshTokenDto: RefreshTokenDto,
-		@Res() res: Response,
+		@Res() res: FastifyReply,
 	) {
 		const { refreshToken } = refreshTokenDto;
 		const path = "refresh-token";
 		const method = "Post";
+		const session = await this.connection.startSession();
+		session.startTransaction();
 
 		try {
 			// Verify token
@@ -756,7 +1047,9 @@ export class AuthController {
 			}
 
 			// Find user
-			const user = await this.userService.findOne(decoded.sub.toString());
+			const user = await this.userService.findOneById(
+				decoded.sub.toString(),
+			);
 
 			if (!user) {
 				throw new Error("User not found");
@@ -775,6 +1068,8 @@ export class AuthController {
 				email: user.email,
 			});
 
+			await session.commitTransaction();
+
 			return Responses.getResponse({
 				res,
 				path,
@@ -784,6 +1079,7 @@ export class AuthController {
 				data: { access_token: newAccessToken },
 			});
 		} catch (error) {
+			await session.abortTransaction();
 			console.error(`AuthController > ${path} : `, error);
 
 			if (error.message === "User not found") {
@@ -823,6 +1119,8 @@ export class AuthController {
 				subject: "auth",
 				error: "An error occurred while confirming the account",
 			});
+		} finally {
+			session.endSession();
 		}
 	}
 
@@ -852,13 +1150,13 @@ export class AuthController {
 	@Put("reset-password")
 	async resetPassword(
 		@Body() resetPasswordDto: ResetPasswordDto,
-		@Res() res: Response,
-		@Req() req: Request,
-		@Ip() ip: string,
+		@Res() res: FastifyReply,
 	) {
 		const { token, newPassword } = resetPasswordDto;
 		const path = "reset-password";
 		const method = "Post";
+		const session = await this.connection.startSession();
+		session.startTransaction();
 
 		try {
 			// Verify token
@@ -869,7 +1167,9 @@ export class AuthController {
 			}
 
 			// Find user
-			const user = await this.userService.findOne(decoded.sub.toString());
+			const user = await this.userService.findOneById(
+				decoded.sub.toString(),
+			);
 
 			if (!user) {
 				throw new Error("User not found");
@@ -892,7 +1192,7 @@ export class AuthController {
 			try {
 				const client = await this.clientService.findWhere({
 					where: {
-						userId: user[0]._id.toString(),
+						userId: user._id.toString(),
 					},
 				});
 
@@ -900,18 +1200,20 @@ export class AuthController {
 					throw new Error("Client not found");
 				}
 
-				this.logHelper.log({
-					ip: ip,
-					user: req["user"],
-					userInfos: req["userInfos"],
-					level: LogLevelEnum.INFO,
-					message: "User successfully registered",
-					context: `AuthController > ${path}: `,
-					metadata: { user, client },
-				});
+				// this.logHelper.log({
+				// 	ip: ip,
+				// 	user: req["user"],
+				// 	userInfos: req["userInfos"],
+				// 	level: LogLevelEnum.INFO,
+				// 	message: "User successfully registered",
+				// 	context: `AuthController > ${path}: `,
+				// 	metadata: { user, client },
+				// });
 			} catch (logError) {
 				console.error(`Failed to create log in ${path}: `, logError);
 			}
+
+			await session.commitTransaction();
 
 			return Responses.getResponse({
 				res,
@@ -922,6 +1224,8 @@ export class AuthController {
 				data: { message: "Password successfully reset or initialized" },
 			});
 		} catch (error) {
+			await session.abortTransaction();
+
 			console.error(`AuthController > ${path} : `, error);
 
 			if (error.message === "User not found") {
@@ -961,6 +1265,8 @@ export class AuthController {
 				subject: "auth",
 				error: "An error occurred while resetting the password",
 			});
+		} finally {
+			session.endSession();
 		}
 	}
 
@@ -991,33 +1297,34 @@ export class AuthController {
 	@Post("forgot-password")
 	async forgotPassword(
 		@Body() forgotPasswordDto: ForgotPasswordDto,
-		@Res() res: Response,
-		@Req() req: Request,
+		@Res() res: FastifyReply,
+		@Req() req: FastifyRequest,
 		@Ip() ip: string,
 	) {
 		const { email } = forgotPasswordDto;
 		const path = "forgot-password";
 		const method = "Post";
+		const session = await this.connection.startSession();
+		session.startTransaction();
 
 		try {
 			// Find user
-			const user = await this.userService.findWhere({
-				where: { email },
-				limit: 1,
+			const user = await this.userService.findOne({
+				email,
 			});
 
 			// Check if user exists
 			if (user) {
 				const payload = {
-					sub: user[0]._id,
-					email: user[0].email,
+					sub: user._id,
+					email: user.email,
 					type: TokenTypeEnum.RESET_PASSWORD,
 				};
 				const resetToken = Token.generateToken(payload);
 
 				// Send email
 				const sendEmail = await this.mailHelper.sendResetPasswordEmail({
-					to: [user[0].email],
+					to: [user.email],
 					templateDatas: {
 						token: resetToken,
 					},
@@ -1029,29 +1336,19 @@ export class AuthController {
 			}
 
 			// Log the password reset
-			try {
-				const client = await this.clientService.findWhere({
-					where: {
-						userId: user[0]._id.toString(),
-					},
-				});
+			// try {
+			// 	const client = await this.clientService.findOne({
+			// 		userId: user._id.toString(),
+			// 	});
 
-				if (!client || client.length === 0) {
-					throw new Error("Client not found");
-				}
+			// 	if (!client) {
+			// 		throw new Error("Client not found");
+			// 	}
+			// } catch (logError) {
+			// 	console.error(`Failed to create log in ${path}: `, logError);
+			// }
 
-				this.logHelper.log({
-					ip: ip,
-					user: req["user"],
-					userInfos: req["userInfos"],
-					level: LogLevelEnum.INFO,
-					message: "User successfully registered",
-					context: `AuthController > ${path}: `,
-					metadata: { user, client },
-				});
-			} catch (logError) {
-				console.error(`Failed to create log in ${path}: `, logError);
-			}
+			await session.commitTransaction();
 
 			return Responses.getResponse({
 				res,
@@ -1065,6 +1362,8 @@ export class AuthController {
 				},
 			});
 		} catch (error) {
+			await session.abortTransaction();
+
 			console.error(`AuthController > ${path} : `, error);
 
 			if (
@@ -1106,6 +1405,8 @@ export class AuthController {
 				subject: "auth",
 				error: "An error occurred while processing your request",
 			});
+		} finally {
+			session.endSession();
 		}
 	}
 }

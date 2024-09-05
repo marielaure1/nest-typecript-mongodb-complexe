@@ -1,7 +1,7 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { UserStatusEnum } from "@enums/user-status.enum";
 import { UserRoleEnum } from "@enums/user-role.enum";
+import { UserStatusEnum } from "@enums/user-status.enum";
 
 export type UserDocument = User & Document;
 
@@ -18,27 +18,27 @@ export class User {
 	@Prop({ required: true, select: false })
 	password: string;
 
-	@Prop({
-		type: [String],
-		required: true,
-		default: [UserStatusEnum.NOT_VERIFIED],
-		enum: Object.values(UserStatusEnum),
-	})
-	status: UserStatusEnum[];
-
 	@Prop({ type: Array, default: UserRoleEnum.CLIENT, enum: UserRoleEnum })
 	role: UserRoleEnum;
+
+	@Prop({ required: true })
+	isActive: boolean;
+
+	@Prop({ required: true })
+	isVerified: boolean;
+
+	@Prop()
+	lastConnection?: Date;
+
+	@Prop({
+		type: String,
+		enum: UserStatusEnum,
+		default: UserStatusEnum.AVAILABLE,
+	})
+	status: UserStatusEnum;
 
 	createdAt: Date;
 	updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-// const excludePassword = function () {
-// 	this.select("-password");
-// };
-
-// UserSchema.pre("find", excludePassword);
-// UserSchema.pre("findOne", excludePassword);
-// UserSchema.pre("findOneAndUpdate", excludePassword);

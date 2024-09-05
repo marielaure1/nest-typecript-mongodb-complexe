@@ -10,9 +10,10 @@ import {
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import { Response } from "express";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { FastifyReply } from "fastify";
+
 import { Connection } from "mongoose";
+import { LogsService } from "@modules/logs/logs.service";
 
 @ApiTags("subscriptions")
 @Controller("subscriptions")
@@ -23,9 +24,8 @@ export class SubscriptionsController extends AppController<
 > {
 	constructor(
 		private readonly subscriptionsService: SubscriptionsService,
-		logHelper: LogHelper,
 		connection: Connection,
 	) {
-		super(subscriptionsService, "subscriptions", connection, logHelper);
+		super(subscriptionsService, "subscriptions", connection);
 	}
 }

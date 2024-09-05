@@ -23,6 +23,6 @@ import { settings } from "@constants/settings";
 		},
 		StripePriceService,
 	],
-	exports: ["STRIPE_CLIENT"],
+	exports: ["STRIPE_CLIENT", StripePriceService],
 })
 export class StripeModule {}

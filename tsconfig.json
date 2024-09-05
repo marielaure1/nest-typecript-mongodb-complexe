@@ -56,11 +56,18 @@
       * src
       */
       "@src/*": ["./src/*"],
+      /*
+      * Test
+      */
+      "@test/*": ["./test/*"],
+      /*
+      * Views
+      */
+      "@views/*": ["./views/*"],
     }, 
   },
   "include": [
       "src/**/*.ts",
-      "src/**/*.hbs"
     ],
     "exclude": [
       "node_modules"

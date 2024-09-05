@@ -3,7 +3,7 @@
 // import { PromoCodesService } from "@modules/promo-codes/promo-codes.service";
 // import { CreatePromoCodeDto } from "@modules/promo-codes/dto/create-promo-code.dto";
 // import { UpdatePromoCodeDto } from "@modules/promo-codes/dto/update-promo-code.dto";
-// import { Response } from "express";
+// import { FastifyReply } from "fastify";
 // import { ValidationError } from "class-validator";
 
 // describe("PromoCodesController", () => {
@@ -80,7 +80,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(201);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 201,
 // 			datas: { promoCodes: { _id: "1", ...dto } },
 // 			message: "promoCodes create with success",
@@ -103,7 +103,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { promoCodes: [validationError] },
 // 			message: "Validation errors occurred",
@@ -124,7 +124,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { promoCodes: "Internal server error" },
 // 			message: "An internal server error occurred",
@@ -142,7 +142,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { promoCodes: [mockPromoCode] },
 // 			message: "promoCodes retrieve with success",
@@ -159,7 +159,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { promoCodes: "Not Found" },
 // 			message: "promoCodes not found",
@@ -178,7 +178,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { promoCodes: "Internal server error" },
 // 			message: "promoCodes internal server error",
@@ -196,7 +196,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { promoCodes: { _id: "1", ...mockPromoCode } },
 // 			message: "promoCodes retrieve with success",
@@ -213,7 +213,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { promoCodes: "Not Found" },
 // 			message: "promoCodes not found",
@@ -232,7 +232,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { promoCodes: "Internal server error" },
 // 			message: "promoCodes internal server error",
@@ -254,7 +254,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { promoCodes: "Not Found" },
 // 			message: "promoCodes not found",
@@ -275,7 +275,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { promoCodes: "Internal server error" },
 // 			message: "promoCodes internal server error",
@@ -300,7 +300,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { promoCodes: [validationError] },
 // 			message: "Validation errors occurred",
@@ -318,7 +318,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { promoCodes: { removed: true } },
 // 			message: "promoCodes delete with success",
@@ -335,7 +335,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { promoCodes: {} },
 // 			message: "promoCodes not found",
@@ -354,7 +354,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { promoCodes: "Internal server error" },
 // 			message: "promoCodes internal server error",

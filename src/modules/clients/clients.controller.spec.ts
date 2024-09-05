@@ -3,7 +3,7 @@
 // import { ClientsService } from "./clients.service";
 // import { CreateClientDto } from "./dto/create-client.dto";
 // import { UpdateClientDto } from "./dto/update-client.dto";
-// import { Response, Request } from "express";
+// import { FastifyRequest, FastifyReply } from "fastify";
 // import { ValidationError } from "class-validator";
 
 // // TODO: Add more tests
@@ -92,7 +92,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(201);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 201,
 // 			datas: { clients: { _id: "1", ...dto } },
 // 			message: "clients create with success",
@@ -123,7 +123,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { clients: [validationError] },
 // 			message: "Validation errors occurred",
@@ -152,7 +152,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { clients: "Internal server error" },
 // 			message: "An internal server error occurred",
@@ -170,7 +170,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { clients: [mockClient] },
 // 			message: "clients retrieve with success",
@@ -187,7 +187,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { clients: "Not Found" },
 // 			message: "clients not found",
@@ -206,7 +206,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { clients: "Internal server error" },
 // 			message: "clients internal server error",
@@ -224,7 +224,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { clients: { _id: "1", ...mockClient } },
 // 			message: "clients retrieve with success",
@@ -241,7 +241,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { clients: "Not Found" },
 // 			message: "clients not found",
@@ -260,7 +260,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { clients: "Internal server error" },
 // 			message: "clients internal server error",
@@ -282,7 +282,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { clients: "Not Found" },
 // 			message: "clients not found",
@@ -303,7 +303,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { clients: "Internal server error" },
 // 			message: "clients internal server error",
@@ -328,7 +328,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { clients: [validationError] },
 // 			message: "Validation errors occurred",
@@ -346,7 +346,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { clients: { removed: true } },
 // 			message: "clients delete with success",
@@ -363,7 +363,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { clients: {} },
 // 			message: "clients not found",
@@ -382,7 +382,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { clients: "Internal server error" },
 // 			message: "clients internal server error",
@@ -401,7 +401,7 @@
 // 		await controller.findAllOwner(res, req);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { clients: [mockClient] },
 // 			message: "clients retrieve with success",
@@ -421,7 +421,7 @@
 // 		await controller.findAllOwner(res, req);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { clients: {} },
 // 			message: "clients not found",
@@ -443,7 +443,7 @@
 // 		await controller.findAllOwner(res, req);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { clients: "Internal server error" },
 // 			message: "clients internal server error",

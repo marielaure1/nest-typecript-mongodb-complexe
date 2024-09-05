@@ -5,7 +5,7 @@ import { ClientsController } from "@modules/clients/clients.controller";
 import { MailService } from "@providers/mail/mail.service";
 import { MailHelper } from "@providers/mail/helpers/mail.helper";
 import { LogsService } from "@modules/logs/logs.service";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+
 // import { UsersService } from "@modules/users/users.service";
 // import { UsersModule } from "@modules/users/users.module";
 // import { CustomersService } from "@modules/customers/customers.service";
@@ -21,8 +21,6 @@ import { LogHelper } from "@modules/logs/helpers/log.helper";
 		ClientsService,
 		MailService,
 		MailHelper,
-		LogsService,
-		LogHelper,
 	],
 	exports: [ClientsModule, ClientsService],
 })

@@ -4,8 +4,7 @@ import { OrganizationsController } from "@modules/organizations/organizations.co
 import { OrganizationsService } from "@modules/organizations/organizations.service";
 import { MailService } from "@providers/mail/mail.service";
 import { MailHelper } from "@providers/mail/helpers/mail.helper";
-import { LogsService } from "@modules/logs/logs.service";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+
 
 @Module({
 	imports: [],
@@ -14,8 +13,6 @@ import { LogHelper } from "@modules/logs/helpers/log.helper";
 		OrganizationsService,
 		MailService,
 		MailHelper,
-		LogsService,
-		LogHelper,
 	],
 	exports: [],
 })

@@ -2,18 +2,26 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "src/app.module";
 import { settings } from "@constants/settings";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import * as bodyParser from "body-parser";
+import fastifyCors from "fastify-cors";
 import { CustomValidationPipe } from "@pipes/custom-validation.pipe";
 import { GlobalExceptionFilter } from "@exceptions/validator.exception";
-
-// import * as fs from "fs";
-// import * as yaml from "js-yaml";
+import {
+	FastifyAdapter,
+	NestFastifyApplication,
+} from "@nestjs/platform-fastify";
+import { RequestInterceptor } from "@interceptors/request.interceptor";
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create<NestFastifyApplication>(
+		AppModule,
+		new FastifyAdapter(),
+	);
 
-	app.enableCors();
-	app.use(bodyParser.json());
+	app.register(fastifyCors, {
+		origin: true,
+	});
+
+	app.useGlobalInterceptors(new RequestInterceptor());
 
 	app.useGlobalPipes(
 		new CustomValidationPipe({
@@ -24,6 +32,7 @@ async function bootstrap() {
 	);
 
 	app.useGlobalFilters(new GlobalExceptionFilter());
+	console.log("Global filters applied");
 
 	const config = new DocumentBuilder()
 		.setTitle("Api NOM_DU_PROJET")
@@ -32,14 +41,11 @@ async function bootstrap() {
 		.addTag("NOM_DU_PROJET")
 		.build();
 	const document = SwaggerModule.createDocument(app, config);
+
 	app.setGlobalPrefix("api");
+	console.log("Global prefix set");
+
 	SwaggerModule.setup("api", app, document);
-
-	// // Export as JSON
-	// fs.writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
-
-	// // Export as YAML
-	// fs.writeFileSync('./swagger.yaml', yaml.dump(document));
 
 	await app.listen(settings.PORT, () => console.log(settings.PORT));
 }

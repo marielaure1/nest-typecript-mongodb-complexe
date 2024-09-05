@@ -10,10 +10,11 @@ import {
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import { Response } from "express";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
-import { log } from "console";
+import { FastifyReply } from "fastify";
+
+
 import { Connection } from "mongoose";
+import { LogsService } from "@modules/logs/logs.service";
 
 @ApiTags("promo-codes")
 @Controller("promo-codes")
@@ -24,9 +25,8 @@ export class PromoCodesController extends AppController<
 > {
 	constructor(
 		private readonly promoCodesService: PromoCodesService,
-		logHelper: LogHelper,
 		connection: Connection,
 	) {
-		super(promoCodesService, "promoCodes", connection, logHelper);
+		super(promoCodesService, "promoCodes", connection);
 	}
 }

@@ -3,8 +3,6 @@ import { AuthMiddleware } from "@middlewares/auth.middleware";
 import { PromoCodesController } from "@modules/promo-codes/promo-codes.controller";
 import { PromoCodesService } from "@modules/promo-codes/promo-codes.service";
 import { MailService } from "@providers/mail/mail.service";
-import { LogsService } from "@modules/logs/logs.service";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
 import { MailHelper } from "@providers/mail/helpers/mail.helper";
 
 @Module({
@@ -14,8 +12,6 @@ import { MailHelper } from "@providers/mail/helpers/mail.helper";
 		PromoCodesService,
 		MailService,
 		MailHelper,
-		LogsService,
-		LogHelper,
 	],
 	exports: [],
 })

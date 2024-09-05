@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { MailService } from "@src/providers/mail/mail.service";
 import { settings } from "@constants/settings";
+import { CONFIG } from "@config/config";
 
 @Injectable()
 export class MailHelper {
@@ -18,8 +19,8 @@ export class MailHelper {
 		const sendEmail = await this.mailService.sendMail({
 			to: params.to,
 			sender: params.sender ?? this.sender,
-			subject: "Welcome to NOM",
-			template: "./confirmation",
+			subject: `Welcome to ${CONFIG.infos.company.name}`,
+			template: "./auth/confirmation-client",
 			templateDatas: {
 				firstName: params.templateDatas.firstName,
 				url: `${settings.FRONTEND_URL}auth/confirm/${params.templateDatas.token}`,
@@ -39,8 +40,8 @@ export class MailHelper {
 		const sendEmail = await this.mailService.sendMail({
 			to: params.to,
 			sender: params.sender ?? this.sender,
-			subject: "Welcome to NOM",
-			template: "./confirmation",
+			subject: `Welcome to ${CONFIG.infos.company.name}`,
+			template: "./auth/confirmation-organization",
 			templateDatas: {
 				organizationName: params.templateDatas.organizationName,
 				userEmail: params.templateDatas.userEmail,
@@ -56,7 +57,7 @@ export class MailHelper {
 			to: params.to,
 			sender: params.sender ?? this.sender,
 			subject: "Reset your password",
-			template: "./reset-password",
+			template: "./auth/reset-password",
 			templateDatas: {
 				url: `${settings.FRONTEND_URL}auth/reset-password/${params.templateDatas.token}`,
 			},
@@ -70,7 +71,7 @@ export class MailHelper {
 			to: params.to,
 			sender: params.sender ?? this.sender,
 			subject: "Init your password",
-			template: "./init-password",
+			template: "./auth/init-password",
 			templateDatas: {
 				url: `${settings.FRONTEND_URL}auth/init-password/${params.templateDatas.token}`,
 			},

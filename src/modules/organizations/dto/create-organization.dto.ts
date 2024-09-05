@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsString, IsOptional } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsString, IsOptional, IsEmpty } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class CreateOrganizationDto {
 	@ApiProperty({
@@ -10,7 +10,7 @@ export class CreateOrganizationDto {
 	@IsString()
 	name: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The description of the organization",
 		example: "A leading company in technology innovations.",
 	})
@@ -18,7 +18,7 @@ export class CreateOrganizationDto {
 	@IsString()
 	description?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The logo of the organization",
 		example: "https://example.com/logo.png",
 	})
@@ -26,7 +26,7 @@ export class CreateOrganizationDto {
 	@IsString()
 	logo?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The first address of the organization",
 		example: "123 Innovation Street",
 	})
@@ -34,7 +34,7 @@ export class CreateOrganizationDto {
 	@IsString()
 	address1?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The second address of the organization",
 		example: "Suite 100",
 	})
@@ -42,7 +42,7 @@ export class CreateOrganizationDto {
 	@IsString()
 	address2?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The postal code of the organization",
 		example: "12345",
 	})
@@ -50,7 +50,7 @@ export class CreateOrganizationDto {
 	@IsString()
 	postalCode?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The city of the organization",
 		example: "Techville",
 	})
@@ -58,7 +58,7 @@ export class CreateOrganizationDto {
 	@IsString()
 	city?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The country of the organization",
 		example: "USA",
 	})
@@ -66,19 +66,11 @@ export class CreateOrganizationDto {
 	@IsString()
 	country?: string;
 
-	@ApiProperty({
-		description: "The Stripe plan ID associated with the organization",
-		example: "plan_123abc",
-	})
 	@IsOptional()
 	@IsString()
 	stripePlanId?: string;
 
-	@ApiProperty({
-		description: "The manager ID of the organization",
-		example: "manager_001",
-	})
-	@IsNotEmpty()
+	@IsOptional()
 	@IsString()
-	managerId: string;
+	managerId?: string;
 }

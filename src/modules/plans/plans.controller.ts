@@ -18,13 +18,12 @@ import {
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import { Response, Request } from "express";
+import { FastifyRequest, FastifyReply } from "fastify";
 import { StripeProductService } from "@src/providers/stripe/product/stripe-product.service";
 import { StripePriceService } from "@src/providers/stripe/price/stripe-price.service";
 import { LogsService } from "@modules/logs/logs.service";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
 import { Responses } from "@helpers/responses.helper";
-import { LogLevelEnum } from "@enums/log-level.enum";
+import { LogLevelEnum } from "@modules/logs/enums/log-level.enum";
 import { Connection } from "mongoose";
 
 @ApiTags("plans")
@@ -39,9 +38,8 @@ export class PlansController extends AppController<
 		private readonly stripeProductService: StripeProductService,
 		private readonly stripePriceService: StripePriceService,
 		connection: Connection,
-		logHelper: LogHelper,
 	) {
-		super(plansService, "plans", connection, logHelper);
+		super(plansService, "plans", connection);
 	}
 
 	@ApiOperation({ summary: "Create a new plan" })
@@ -57,9 +55,7 @@ export class PlansController extends AppController<
 	@Post()
 	async create(
 		@Body() createPlanDto: CreatePlanDto,
-		@Res() res: Response,
-		@Req() req: Request,
-		@Ip() ip: string,
+		@Res() res: FastifyReply,
 	) {
 		const path = "register";
 		const method = "Post";
@@ -73,17 +69,17 @@ export class PlansController extends AppController<
 				throw new Error("Failed to create stripe product");
 			}
 
-			this.logHelper.log({
-				ip: ip,
-				user: req["user"],
-				userInfos: req["userInfos"],
-				level: LogLevelEnum.INFO,
-				message: "Stripe product successfully registered",
-				context: `PlansController > ${path}: `,
-				metadata: { user: req["user"], client: req["userInfos"] },
-			});
+			// this.logHelper.log({
+			// 	ip: ip,
+			// 	user: req["user"],
+			// 	userInfos: req["userInfos"],
+			// 	level: LogLevelEnum.INFO,
+			// 	message: "Stripe product successfully registered",
+			// 	context: `PlansController > ${path}: `,
+			// 	metadata: { user: req["user"], client: req["userInfos"] },
+			// });
 
-			return super.create(createPlanDto, res, req, ip);
+			return super.create(createPlanDto, res);
 		} catch (error) {
 			console.error(`PlansController > ${path} : `, error);
 

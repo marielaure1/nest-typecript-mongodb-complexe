@@ -3,7 +3,7 @@
 // import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
 // import { CreateBookerEmployeeDto } from "@modules/booker-employees/dto/create-booker-employee.dto";
 // import { UpdateBookerEmployeeDto } from "@modules/booker-employees/dto/update-booker-employee.dto";
-// import { Response } from "express";
+// import { FastifyReply } from "fastify";
 // import { ValidationError } from "class-validator";
 
 // describe("BookerEmployeesController", () => {
@@ -82,7 +82,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(201);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 201,
 // 			datas: { bookerEmployees: { _id: "1", ...dto } },
 // 			message: "bookerEmployees create with success",
@@ -105,7 +105,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { bookerEmployees: [validationError] },
 // 			message: "Validation errors occurred",
@@ -126,7 +126,7 @@
 // 		await controller.create(dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { bookerEmployees: "Internal server error" },
 // 			message: "An internal server error occurred",
@@ -144,7 +144,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { bookerEmployees: [mockBookerEmployee] },
 // 			message: "bookerEmployees retrieve with success",
@@ -161,7 +161,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { bookerEmployees: "Not Found" },
 // 			message: "bookerEmployees not found",
@@ -180,7 +180,7 @@
 // 		await controller.findAll(res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { bookerEmployees: "Internal server error" },
 // 			message: "bookerEmployees internal server error",
@@ -198,7 +198,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { bookerEmployees: { _id: "1", ...mockBookerEmployee } },
 // 			message: "bookerEmployees retrieve with success",
@@ -215,7 +215,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { bookerEmployees: "Not Found" },
 // 			message: "bookerEmployees not found",
@@ -234,7 +234,7 @@
 // 		await controller.findOne("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { bookerEmployees: "Internal server error" },
 // 			message: "bookerEmployees internal server error",
@@ -256,7 +256,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { bookerEmployees: "Not Found" },
 // 			message: "bookerEmployees not found",
@@ -277,7 +277,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { bookerEmployees: "Internal server error" },
 // 			message: "bookerEmployees internal server error",
@@ -302,7 +302,7 @@
 // 		await controller.update("1", dto, res);
 
 // 		expect(res.status).toHaveBeenCalledWith(422);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 422,
 // 			datas: { bookerEmployees: [validationError] },
 // 			message: "Validation errors occurred",
@@ -320,7 +320,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(200);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 200,
 // 			datas: { bookerEmployees: { removed: true } },
 // 			message: "bookerEmployees delete with success",
@@ -337,7 +337,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(404);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 404,
 // 			datas: { bookerEmployees: {} },
 // 			message: "bookerEmployees not found",
@@ -356,7 +356,7 @@
 // 		await controller.remove("1", res);
 
 // 		expect(res.status).toHaveBeenCalledWith(500);
-// 		expect(res.json).toHaveBeenCalledWith({
+// 		expect(res.send).toHaveBeenCalledWith({
 // 			code: 500,
 // 			datas: { bookerEmployees: "Internal server error" },
 // 			message: "bookerEmployees internal server error",

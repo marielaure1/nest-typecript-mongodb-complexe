@@ -1,10 +1,11 @@
 import { StringHelper } from "@helpers/string.helper";
-import { Response } from "express";
-import { NumberHelper } from "./number.helper";
+import { FastifyReply } from "fastify";
+import { NumberHelper } from "@helpers/number.helper";
 import { HttpStatus } from "@nestjs/common";
+// import { LoggerService } from "@providers/logger/logger.service";
 
 interface ResponsesProps {
-	res: Response;
+	res: FastifyReply;
 	path: string;
 	method: string;
 	code: number;
@@ -16,7 +17,9 @@ interface ResponsesProps {
 }
 
 export class Responses {
+
 	public static getResponse(params: ResponsesProps): object {
+		// let loggerService: LoggerService;
 		let success: boolean = false;
 		let codeMessage: string;
 		let action: string;
@@ -64,6 +67,16 @@ export class Responses {
 			(success
 				? `${schema} ${action} successfully`
 				: `${schema} ${codeMessage}`);
+
+		// if (success) {
+		// 	loggerService.log(
+		// 		`[Success] ${params.subject.toUpperCase()} > (${params.path} => code : ${params.code}, message: ${message})`,
+		// 	);
+		// } else {
+		// 	loggerService.error(
+		// 		`[Error] ${params.subject.toUpperCase()} > (${params.path} => code : ${params.code}, message: ${message})`,
+		// 	);
+		// }
 		console.log(
 			`[${success ? "Success" : "Error"}] ${params.subject.toUpperCase()} > (${params.path} => code : ${params.code}, message: ${message})`,
 		);
@@ -80,7 +93,7 @@ export class Responses {
 			responseJson["error"] = params.error;
 		}
 
-		return params.res.status(params.code).json(responseJson);
+		return params.res.status(params.code).send(responseJson);
 	}
 
 	public static getStatusText(statusCode: number): string | undefined {

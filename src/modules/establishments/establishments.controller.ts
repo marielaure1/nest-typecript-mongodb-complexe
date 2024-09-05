@@ -4,14 +4,7 @@ import { CreateEstablishmentDto } from "@modules/establishments/dto/create-estab
 import { UpdateEstablishmentDto } from "@modules/establishments/dto/update-establishment.dto";
 import { EstablishmentDocument } from "@modules/establishments/entities/establishment.entity";
 import { AppController } from "src/app.controller";
-import {
-	ApiTags,
-	ApiOperation,
-	ApiResponse,
-	ApiBearerAuth,
-} from "@nestjs/swagger";
-import { Response } from "express";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { ApiTags } from "@nestjs/swagger";
 import { Connection } from "mongoose";
 
 @ApiTags("establishments")
@@ -23,9 +16,8 @@ export class EstablishmentsController extends AppController<
 > {
 	constructor(
 		private readonly establishmentsService: EstablishmentsService,
-		logHelper: LogHelper,
 		connection: Connection,
 	) {
-		super(establishmentsService, "establishments", connection, logHelper);
+		super(establishmentsService, "establishments", connection);
 	}
 }

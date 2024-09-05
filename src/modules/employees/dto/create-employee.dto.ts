@@ -6,7 +6,7 @@ export class CreateEmployeeDto {
 		description: "The unique user ID of the employee",
 		example: "user_12345",
 	})
-	@IsNotEmpty()
+	@IsOptional()
 	@IsString()
 	userId: string;
 

@@ -22,6 +22,8 @@ module.exports = {
       '^@serializers/(.*)$': '<rootDir>/src/common/serializers/$1',
       '^@entities/(.*)$': '<rootDir>/src/common/entities/$1',
       '^@src/(.*)$': '<rootDir>/src/$1',
+      '^@test/(.*)$': '<rootDir>/test/$1',
+      '^@view/(.*)$': '<rootDir>/views/$1',
     },
   };
   

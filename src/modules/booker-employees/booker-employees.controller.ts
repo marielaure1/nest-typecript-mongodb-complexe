@@ -1,3 +1,4 @@
+import { log } from "console";
 import { Controller } from "@nestjs/common";
 import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
 import { CreateBookerEmployeeDto } from "@modules/booker-employees/dto/create-booker-employee.dto";
@@ -10,9 +11,10 @@ import {
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import { Response } from "express";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { FastifyReply } from "fastify";
+
 import { Connection } from "mongoose";
+import { LogsService } from "@modules/logs/logs.service";
 
 @ApiTags("booker-employees")
 @Controller("booker-employees")
@@ -23,9 +25,13 @@ export class BookerEmployeesController extends AppController<
 > {
 	constructor(
 		private readonly bookerEmployeesService: BookerEmployeesService,
-		logHelper: LogHelper,
 		connection: Connection,
+		logsService: LogsService,
 	) {
-		super(bookerEmployeesService, "bookerEmployees", connection, logHelper);
+		super(
+			bookerEmployeesService,
+			"bookerEmployees",
+			connection,
+		);
 	}
 }

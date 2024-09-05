@@ -4,14 +4,7 @@ import { CreateOrganizationDto } from "@modules/organizations/dto/create-organiz
 import { UpdateOrganizationDto } from "@modules/organizations/dto/update-organization.dto";
 import { OrganizationDocument } from "@modules/organizations/entities/organization.entity";
 import { AppController } from "src/app.controller";
-import {
-	ApiTags,
-	ApiOperation,
-	ApiResponse,
-	ApiBearerAuth,
-} from "@nestjs/swagger";
-import { Response } from "express";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { ApiTags } from "@nestjs/swagger";
 import { Connection } from "mongoose";
 
 @ApiTags("organizations")
@@ -23,9 +16,8 @@ export class OrganizationsController extends AppController<
 > {
 	constructor(
 		private readonly organizationsService: OrganizationsService,
-		logHelper: LogHelper,
 		connection: Connection,
 	) {
-		super(organizationsService, "organizations", connection, logHelper);
+		super(organizationsService, "organizations", connection);
 	}
 }

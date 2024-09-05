@@ -4,14 +4,7 @@ import { CreatePlanPriceDto } from "@modules/plan-prices/dto/create-plan-price.d
 import { UpdatePlanPriceDto } from "@modules/plan-prices/dto/update-plan-price.dto";
 import { PlanPriceDocument } from "@modules/plan-prices/entities/plan-price.entity";
 import { AppController } from "src/app.controller";
-import {
-	ApiTags,
-	ApiOperation,
-	ApiResponse,
-	ApiBearerAuth,
-} from "@nestjs/swagger";
-import { Response } from "express";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+import { ApiTags } from "@nestjs/swagger";
 import { Connection } from "mongoose";
 
 @ApiTags("plan-prices")
@@ -23,9 +16,8 @@ export class PlanPricesController extends AppController<
 > {
 	constructor(
 		private readonly planPricesService: PlanPricesService,
-		logHelper: LogHelper,
 		connection: Connection,
 	) {
-		super(planPricesService, "planPrices", connection, logHelper);
+		super(planPricesService, "planPrices", connection);
 	}
 }

@@ -7,8 +7,6 @@ import {
 	Delete,
 	Res,
 	Put,
-	Req,
-	Ip,
 } from "@nestjs/common";
 import { UsersService } from "@modules/users/users.service";
 import { CreateUserDto } from "@modules/users/dto/create-user.dto";
@@ -21,10 +19,9 @@ import {
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import { Response, Request } from "express";
+import { FastifyReply } from "fastify";
 // import { AuthGuard } from "@guards/auth.guard";
 import { UserRoleEnum } from "@enums/user-role.enum";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
 import { Connection } from "mongoose";
 
 @ApiTags("users")
@@ -36,10 +33,9 @@ export class UsersController extends AppController<
 > {
 	constructor(
 		private readonly usersService: UsersService,
-		logHelper: LogHelper,
 		connection: Connection,
 	) {
-		super(usersService, "users", connection, logHelper);
+		super(usersService, "users", connection);
 	}
 
 	@ApiOperation({ summary: "Create a new user" })
@@ -52,9 +48,7 @@ export class UsersController extends AppController<
 	@Post()
 	async create(
 		@Body() createUserDto: CreateUserDto,
-		@Res() res: Response,
-		@Req() req: Request,
-		@Ip() ip: string,
+		@Res() res: FastifyReply,
 	) {
 		const { role } = createUserDto;
 
@@ -62,28 +56,23 @@ export class UsersController extends AppController<
 			createUserDto.role = UserRoleEnum.CLIENT;
 		}
 
-		return super.create(createUserDto, res, req, ip);
+		return super.create(createUserDto, res);
 	}
 
 	@ApiOperation({ summary: "Get all users" })
 	@ApiResponse({ status: 200, description: "Return all users." })
 	@ApiResponse({ status: 404, description: "Users not found." })
 	@Get()
-	async findAll(@Res() res: Response, @Req() req: Request, @Ip() ip: string) {
-		return super.findAll(res, req, ip);
+	async findAll(@Res() res: FastifyReply) {
+		return super.findAll(res);
 	}
 
 	@ApiOperation({ summary: "Get a user by id" })
 	@ApiResponse({ status: 200, description: "Return a user." })
 	@ApiResponse({ status: 404, description: "User not found." })
 	@Get(":id")
-	async findOne(
-		@Param("id") id: string,
-		@Res() res: Response,
-		@Req() req: Request,
-		@Ip() ip: string,
-	) {
-		return super.findOne(id, res, req, ip);
+	async findOne(@Param("id") id: string, @Res() res: FastifyReply) {
+		return super.findOne(id, res);
 	}
 
 	@ApiOperation({ summary: "Update a user by id" })
@@ -96,11 +85,9 @@ export class UsersController extends AppController<
 	async update(
 		@Param("id") id: string,
 		@Body() updateUserDto: UpdateUserDto,
-		@Res() res: Response,
-		@Req() req: Request,
-		@Ip() ip: string,
+		@Res() res: FastifyReply,
 	) {
-		return super.update(id, updateUserDto, res, req, ip);
+		return super.update(id, updateUserDto, res);
 	}
 
 	@ApiOperation({ summary: "Delete a user by id" })
@@ -110,12 +97,7 @@ export class UsersController extends AppController<
 	})
 	@ApiResponse({ status: 404, description: "User not found." })
 	@Delete(":id")
-	async remove(
-		@Param("id") id: string,
-		@Res() res: Response,
-		@Req() req: Request,
-		@Ip() ip: string,
-	) {
-		return super.remove(id, res, req, ip);
+	async remove(@Param("id") id: string, @Res() res: FastifyReply) {
+		return super.remove(id, res);
 	}
 }

@@ -4,11 +4,10 @@ import {
 	NestMiddleware,
 	UnauthorizedException,
 } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { Request, Response, NextFunction } from "express";
+// import { Reflector } from "@nestjs/core";
+import { FastifyRequest, FastifyReply } from "fastify";
 import { UsersService } from "@modules/users/users.service";
 import { Token } from "@helpers/token.helper";
-import { UserRoleEnum } from "@enums/user-role.enum";
 import { EmployeesService } from "@modules/employees/employees.service";
 import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
 import { ClientsService } from "@modules/clients/clients.service";
@@ -25,7 +24,7 @@ export class AuthMiddleware implements NestMiddleware {
 		// private readonly customersService: CustomersService,
 	) {}
 
-	async use(req: Request, res: Response, next: NextFunction) {
+	async use(req: FastifyRequest, res: FastifyReply) {
 		const authHeader = req.headers.authorization;
 
 		if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -38,26 +37,26 @@ export class AuthMiddleware implements NestMiddleware {
 		console.log(token);
 
 		if (!token) {
-			return res.status(401).json({ message: "No token provided" });
+			return res.status(401).send({ message: "No token provided" });
 		}
 
 		try {
 			const isValid = Token.verifyToken(token);
 
 			if (!isValid) {
-				return res.status(401).json({ message: "Invalid token" });
+				return res.status(401).send({ message: "Invalid token" });
 			}
 
 			const isExpired = Token.isTokenExpired(token);
 
 			if (!isExpired) {
-				return res.status(401).json({ message: "Token expired" });
+				return res.status(401).send({ message: "Token expired" });
 			}
 
 			const payload = Token.getPayload(token);
 
 			if (!payload) {
-				return res.status(401).json({ message: "Invalid token" });
+				return res.status(401).send({ message: "Invalid token" });
 			}
 
 			const user = await this.usersService.findOne(payload.sub);
@@ -87,10 +86,8 @@ export class AuthMiddleware implements NestMiddleware {
 					where: { userId: payload.sub },
 				})[0];
 			}
-
-			next();
 		} catch (err) {
-			return res.status(401).json({ message: "Invalid token" });
+			return res.status(401).send({ message: "Invalid token" });
 		}
 	}
 }

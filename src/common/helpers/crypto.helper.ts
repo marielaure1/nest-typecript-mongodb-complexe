@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
 
-export class SecurityHelper {
+export class CryptoHelper {
 	private static encryptionKey =
 		process.env.ENCRYPTION_KEY || "default_encryption_key";
 	private static algorithm = "aes-256-ctr";
@@ -41,5 +41,23 @@ export class SecurityHelper {
 	public static anonymizeAndEncryptIp(ip: string): string {
 		const anonymizedIp = this.anonymizeIp(ip);
 		return this.encrypt(anonymizedIp);
+	}
+
+	/**
+	 * Génère un identifiant unique pour le traçage distribué (traceId).
+	 * Utilise crypto pour générer un identifiant hexadécimal.
+	 * @returns {string} traceId - Un identifiant unique.
+	 */
+	public static generateTraceId(): string {
+		return crypto.randomBytes(16).toString("hex");
+	}
+
+	/**
+	 * Génère un identifiant unique pour la requête (requestId).
+	 * Utilise crypto pour générer un identifiant hexadécimal.
+	 * @returns {string} requestId - Un identifiant unique.
+	 */
+	public static generateRequestId(): string {
+		return crypto.randomBytes(16).toString("hex");
 	}
 }

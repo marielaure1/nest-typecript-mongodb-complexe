@@ -2,10 +2,7 @@ import { Module, MiddlewareConsumer } from "@nestjs/common";
 import { AuthMiddleware } from "@middlewares/auth.middleware";
 import { PlansController } from "@modules/plans/plans.controller";
 import { PlansService } from "@modules/plans/plans.service";
-import { MailService } from "@providers/mail/mail.service";
-import { MailHelper } from "@providers/mail/helpers/mail.helper";
-import { LogsService } from "@modules/logs/logs.service";
-import { LogHelper } from "@modules/logs/helpers/log.helper";
+
 import { StripeProductService } from "@providers/stripe/product/stripe-product.service";
 
 @Module({
@@ -14,12 +11,8 @@ import { StripeProductService } from "@providers/stripe/product/stripe-product.s
 	providers: [
 		PlansService,
 		StripeProductService,
-		MailService,
-		MailHelper,
-		LogsService,
-		LogHelper,
 	],
-	exports: [PlansModule],
+	exports: [PlansService],
 })
 export class PlansModule {
 	configure(consumer: MiddlewareConsumer) {

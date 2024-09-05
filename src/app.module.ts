@@ -11,7 +11,6 @@ import { ConfigModule } from "@nestjs/config";
 import { MongooseConfig } from "@config/database/mongoose.config";
 import { MailModule } from "@src/providers/mail/mail.module";
 // import { StripeModule } from "@providers/services/stripe/stripe.module";
-import { settings } from "@constants/settings";
 
 // MODULES
 import { ClientsModule } from "@modules/clients/clients.module";
@@ -33,6 +32,8 @@ import { OrganizationsModule } from "@modules/organizations/organizations.module
 import { PlanPricesModule } from "@modules/plan-prices/plan-prices.module";
 import { PlansModule } from "@modules/plans/plans.module";
 import { MongooseModule } from "@nestjs/mongoose";
+import { LoggerModule } from "@providers/logger/logger.module";
+// import { LogsService } from "@modules/logs/logs.service";
 // import { PromoCodesModule } from "@modules/promo-codes/promo-codes.module";
 // import { SubscriptionsModule } from "@modules/subscriptions/subscriptions.module";
 // import { TeamsModule } from "@modules/teams/teams.module";
@@ -51,6 +52,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 		MailModule,
 		ThrottlerConfig,
 		StripeModule,
+		LoggerModule,
 		LogsModule,
 		AuthModule,
 		BookerEmployeesModule,
@@ -65,21 +67,19 @@ import { MongooseModule } from "@nestjs/mongoose";
 		// SubscriptionsModule,
 		// TeamsModule,
 
-		// Clients
 		// CustomFieldsModule,
-		// CustomersModule,
 		// NotificationsModule,
 		// PaymentsModule,
-		// PlansModule,
 		// SubscriptionsModule,
 	],
 	controllers: [],
 	providers: [
+		// LogsService,
 		// {
 		// 	provide: APP_GUARD,
 		// 	useClass: ThrottlerBehindProxyGuard,
 		// },
 	],
-	exports: [AppModule],
+	exports: [],
 })
 export class AppModule {}

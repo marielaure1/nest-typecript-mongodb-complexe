@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Model, Document, ClientSession } from "mongoose";
+import { Model, Document, ClientSession, FilterQuery } from "mongoose";
 
 @Injectable()
 export abstract class AppService<
@@ -34,13 +34,31 @@ export abstract class AppService<
 			.exec();
 	}
 
-	async findOne(id: string, session?: ClientSession): Promise<AppModel> {
+	async findOneById(id: string, session?: ClientSession): Promise<AppModel> {
 		const model = await this.appModel
 			.findById(id)
 			.populate(this.populate)
 			.session(session)
 			.exec();
 		return this.populateModel(model);
+	}
+
+	/**
+	 * General method to find one by any field
+	 * @param filter - Filter query object to find a specific data
+	 * @returns A single data document or null if not found
+	 */
+	public async findOne(
+		filter: FilterQuery<AppModel>,
+		session?: ClientSession,
+		find?: string,
+	): Promise<AppModel | null> {
+		const model = await this.appModel
+			.findOne(filter)
+			.session(session)
+			.select(find)
+			.exec();
+		return model || null;
 	}
 
 	async update(
@@ -101,6 +119,10 @@ export abstract class AppService<
 			console.error("AppService > updateMany : ", error);
 			throw error;
 		}
+	}
+
+	async removeMany(where: object, session?: ClientSession): Promise<object> {
+		return await this.appModel.deleteMany(where).session(session).exec();
 	}
 
 	protected async populateModel(model: AppModel): Promise<AppModel> {
