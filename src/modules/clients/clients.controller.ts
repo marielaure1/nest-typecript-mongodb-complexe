@@ -23,38 +23,15 @@ import {
 } from "@nestjs/swagger";
 
 import { Connection } from "mongoose";
+import { Responses } from "@helpers/responses.helper";
 
 @ApiTags("clients")
 @Controller("clients")
-export class ClientsController extends AppController<
-	ClientDocument,
-	CreateClientDto,
-	UpdateClientDto
-> {
+export class ClientsController {
 	constructor(
 		private readonly clientsService: ClientsService,
-		connection: Connection,
-	) {
-		super(clientsService, "clients", connection);
-	}
-
-	@ApiOperation({ summary: "Create a new client" })
-	@ApiResponse({
-		status: HttpStatus.CREATED,
-		description: "The client has been successfully created.",
-	})
-	@ApiResponse({
-		status: HttpStatus.BAD_REQUEST,
-		description: "Bad Request.",
-	})
-	@ApiBearerAuth()
-	@Post()
-	async create(
-		@Body() createClientDto: CreateClientDto,
-		@Res() res: FastifyReply,
-	) {
-		return super.create(createClientDto, res);
-	}
+		private readonly connection: Connection,
+	) {}
 
 	@ApiOperation({ summary: "Get all clients" })
 	@ApiResponse({ status: HttpStatus.OK, description: "Return all clients." })
@@ -64,10 +41,41 @@ export class ClientsController extends AppController<
 	})
 	@ApiBearerAuth()
 	@Get()
-	async findAll(
-		@Res() res: FastifyReply,
-	) {
-		return super.findAll(res);
+	async findAll(@Res() res: FastifyReply) {
+		const path = "findAll";
+		const method = "Get";
+
+		console.log("findAll");
+
+		try {
+			const clients = await this.clientsService.findAllWithUsers({
+				firstName: "Client 14",
+				"user.role": "CLIENT",
+			});
+
+			return Responses.getResponse({
+				res,
+				path,
+				method,
+				code: HttpStatus.OK,
+				subject: "clients",
+				multiple: true,
+				data: {
+					clients: clients,
+				},
+			});
+		} catch (error) {
+			console.error(`ClientsController > ${path} : `, error);
+
+			return Responses.getResponse({
+				res,
+				path,
+				method,
+				code: HttpStatus.INTERNAL_SERVER_ERROR,
+				subject: "clients",
+				error: "An error occurred while retrieving clients with users",
+			});
+		}
 	}
 
 	@ApiOperation({ summary: "Get a client by id" })
@@ -78,11 +86,8 @@ export class ClientsController extends AppController<
 	})
 	@ApiBearerAuth()
 	@Get(":id")
-	async findOne(
-		@Param("id") id: string,
-		@Res() res: FastifyReply,
-	) {
-		return super.findOne(id, res);
+	async findOne(@Param("id") id: string, @Res() res: FastifyReply) {
+		// return super.findOne(id, res);
 	}
 
 	@ApiOperation({ summary: "Update a client by id" })
@@ -103,7 +108,7 @@ export class ClientsController extends AppController<
 	) {
 		console.log("update");
 
-		return super.update(id, updateClientDto, res);
+		// return super.update(id, updateClientDto, res);
 	}
 
 	@ApiOperation({ summary: "Delete a client by id" })
@@ -117,11 +122,8 @@ export class ClientsController extends AppController<
 	})
 	@ApiBearerAuth()
 	@Delete(":id")
-	async remove(
-		@Param("id") id: string,
-		@Res() res: FastifyReply,
-	) {
-		return super.remove(id, res);
+	async remove(@Param("id") id: string, @Res() res: FastifyReply) {
+		// return super.remove(id, res);
 	}
 
 	// @ApiOperation({ summary: "Get all company clients" })

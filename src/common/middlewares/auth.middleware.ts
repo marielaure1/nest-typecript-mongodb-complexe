@@ -2,92 +2,48 @@ import {
 	HttpStatus,
 	Injectable,
 	NestMiddleware,
-	UnauthorizedException,
 } from "@nestjs/common";
-// import { Reflector } from "@nestjs/core";
 import { FastifyRequest, FastifyReply } from "fastify";
-import { UsersService } from "@modules/users/users.service";
 import { Token } from "@helpers/token.helper";
-import { EmployeesService } from "@modules/employees/employees.service";
-import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
-import { ClientsService } from "@modules/clients/clients.service";
-import { Responses } from "@helpers/responses.helper";
-// import { CustomersService } from "@modules/customers/customers.service";
+import { TokenTypeEnum } from "@enums/token-type.enum";
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-	constructor(
-		private readonly usersService: UsersService,
-		private readonly clientsService: ClientsService,
-		private readonly employeesService: EmployeesService,
-		private readonly bookerEmployeesService: BookerEmployeesService,
-		// private readonly customersService: CustomersService,
-	) {}
-
-	async use(req: FastifyRequest, res: FastifyReply) {
+	async use(req: FastifyRequest, res: FastifyReply, next: () => void) {
 		const authHeader = req.headers.authorization;
 
 		if (!authHeader || !authHeader.startsWith("Bearer ")) {
-			throw new UnauthorizedException(
-				"Missing or invalid authentication token",
-			);
+			return res.status(401).send({
+				message: "Missing or invalid authentication token",
+			});
 		}
 
 		const token = authHeader.split(" ")[1];
-		console.log(token);
 
 		if (!token) {
-			return res.status(401).send({ message: "No token provided" });
+			return res.status(401).send({
+				message: "No token provided",
+			});
 		}
 
 		try {
-			const isValid = Token.verifyToken(token);
-
-			if (!isValid) {
-				return res.status(401).send({ message: "Invalid token" });
-			}
-
-			const isExpired = Token.isTokenExpired(token);
-
-			if (!isExpired) {
-				return res.status(401).send({ message: "Token expired" });
-			}
-
-			const payload = Token.getPayload(token);
-
-			if (!payload) {
-				return res.status(401).send({ message: "Invalid token" });
-			}
-
-			const user = await this.usersService.findOne(payload.sub);
-
-			if (!user) {
-				return Responses.getResponse({
-					res,
-					path: "AuthMiddleware",
-					method: "",
-					code: HttpStatus.NOT_FOUND,
-					subject: "auth",
+			Token.verifyToken(token, TokenTypeEnum.ACCESS);
+			next(); // Passe à la requête suivante seulement si tout est OK
+		} catch (err) {
+			// Gestion des erreurs et renvoi de la réponse sans appel à next()
+			if (err.message.includes("TokenExpiredError")) {
+				return res.status(401).send({
+					message: "Token expired",
+				});
+			} else if (err.message.includes("JsonWebTokenError")) {
+				return res.status(401).send({
+					message: "Invalid token",
+				});
+			} else {
+				return res.status(500).send({
+					message: "Token validation error",
 				});
 			}
-
-			req["user"] = user;
-
-			if (user.role.startsWith("ORGANIZATION_")) {
-				req["userInfos"] = await this.employeesService.findWhere({
-					where: { userId: payload.sub },
-				})[0];
-			} else if (user.role.startsWith("BOOKER_")) {
-				req["userInfos"] = await this.bookerEmployeesService.findWhere({
-					where: { userId: payload.sub },
-				})[0];
-			} else {
-				req["userInfos"] = await this.clientsService.findWhere({
-					where: { userId: payload.sub },
-				})[0];
-			}
-		} catch (err) {
-			return res.status(401).send({ message: "Invalid token" });
 		}
 	}
 }

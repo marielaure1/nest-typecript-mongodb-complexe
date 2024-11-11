@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, Matches } from "class-validator";
 import Regex from "@constants/regex";
 
-export class ResetPasswordDto {
+export class InitPasswordDto {
 	@IsNotEmpty()
 	@IsString()
 	readonly token: string;

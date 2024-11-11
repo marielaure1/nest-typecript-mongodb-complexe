@@ -33,6 +33,11 @@ import { PlanPricesModule } from "@modules/plan-prices/plan-prices.module";
 import { PlansModule } from "@modules/plans/plans.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { LoggerModule } from "@providers/logger/logger.module";
+import { APP_GUARD } from "@nestjs/core";
+import { DisableRouteGuard } from "@guards/disable-route.guard";
+import { DatabaseViewsManagerService } from "@providers/database-views-manager/database-views-manager.service";
+import { PermissionCategoriesModule } from "@modules/permission-categories/permission-categories.module";
+import { PermissionsModule } from "@modules/permissions/permissions.module";
 // import { LogsService } from "@modules/logs/logs.service";
 // import { PromoCodesModule } from "@modules/promo-codes/promo-codes.module";
 // import { SubscriptionsModule } from "@modules/subscriptions/subscriptions.module";
@@ -63,6 +68,8 @@ import { LoggerModule } from "@providers/logger/logger.module";
 		OrganizationsModule,
 		PlanPricesModule,
 		PlansModule,
+		PermissionCategoriesModule,
+		PermissionsModule,
 		// PromoCodesModule,
 		// SubscriptionsModule,
 		// TeamsModule,
@@ -74,11 +81,11 @@ import { LoggerModule } from "@providers/logger/logger.module";
 	],
 	controllers: [],
 	providers: [
-		// LogsService,
-		// {
-		// 	provide: APP_GUARD,
-		// 	useClass: ThrottlerBehindProxyGuard,
-		// },
+		{
+			provide: APP_GUARD,
+			useClass: DisableRouteGuard,
+		},
+		DatabaseViewsManagerService,
 	],
 	exports: [],
 })

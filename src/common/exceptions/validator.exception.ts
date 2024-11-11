@@ -28,13 +28,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 				? (exception.getResponse() as any).message || exception.message
 				: "An unexpected error occurred";
 
-		Responses.getResponse({
-			res: response,
+		// Utilisation de Responses.getResponse pour formater la réponse
+		const formattedResponse = Responses.getResponse({
 			path,
 			method,
 			code: status,
 			subject: "Validation Error",
 			error: message,
 		});
+
+		// Envoie explicitement la réponse avec Fastify
+		response.status(status).send(formattedResponse);
 	}
 }

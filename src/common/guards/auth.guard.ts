@@ -18,15 +18,9 @@ export class AuthGuard implements CanActivate {
 	constructor() {} // private readonly reflector: Reflector // private readonly customersService: CustomersService, // private readonly usersService: UsersService, // private readonly firebaseService: FirebaseService,
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const request = context.switchToHttp().getRequest();
+		const req = context.switchToHttp().getRequest();
 
 		try {
-			// const user = await this.usersService.findOne(request["request"].uid);
-			// request['user'] = user;
-
-			// const customer = await this.customersService.findOneByUser(user._id);
-			// request['customer'] = customer;
-
 			// const ownership = this.reflector.get(OWNERSHIP_KEY, context.getHandler());
 
 			// const roles = this.reflector.get<RoleEnum[]>(ROLES_KEY, context.getHandler());

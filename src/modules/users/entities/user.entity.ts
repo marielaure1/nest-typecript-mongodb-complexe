@@ -21,10 +21,10 @@ export class User {
 	@Prop({ type: Array, default: UserRoleEnum.CLIENT, enum: UserRoleEnum })
 	role: UserRoleEnum;
 
-	@Prop({ required: true })
+	@Prop({ required: true, default: true })
 	isActive: boolean;
 
-	@Prop({ required: true })
+	@Prop({ required: true, default: false })
 	isVerified: boolean;
 
 	@Prop()

@@ -1,3 +1,4 @@
+import { userInfo } from "os";
 import { UserDocument } from "@modules/users/entities/user.entity";
 import { LogsService } from "@modules/logs/logs.service";
 import {
@@ -28,7 +29,7 @@ import { MailHelper } from "@src/providers/mail/helpers/mail.helper";
 import { TokenTypeEnum } from "@enums/token-type.enum";
 import { LoginUserDto } from "@modules/auth/dto/login-user.dto";
 import { RefreshTokenDto } from "@modules/auth/dto/refresh-token.dto";
-import { ResetPasswordDto } from "@modules/auth/dto/reset-password.dto";
+import { InitPasswordDto } from "@modules/auth/dto/init-password.dto";
 import { ForgotPasswordDto } from "@modules/auth/dto/forgot-password.dto";
 import { LogLevelEnum } from "@modules/logs/enums/log-level.enum";
 import { OrganizationsService } from "@modules/organizations/organizations.service";
@@ -45,6 +46,7 @@ import { BookerEmployeeDocument } from "@modules/booker-employees/entities/booke
 import { ClientDocument } from "@modules/clients/entities/client.entity";
 import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
 import { EmployeeDocument } from "@modules/employees/entities/employee.entity";
+import { TokenJwtDto } from "@dtos/token-jwt.dto";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -150,7 +152,7 @@ export class AuthController {
 		@Req() req: FastifyRequest,
 		@Ip() ip: string,
 	) {
-		const path = "register";
+		const path = "registerClient";
 		const method = "Post";
 		const session = await this.connection.startSession();
 		session.startTransaction();
@@ -189,7 +191,11 @@ export class AuthController {
 			);
 
 			// Generate token for email confirmation
-			const payload = { sub: user._id, email: user.email };
+			const payload = {
+				sub: user._id,
+				email: user.email,
+				type: TokenTypeEnum.CONFIRMATION_ACCOUNT,
+			};
 			const token = Token.generateToken(payload);
 
 			// Email confirmation for the client
@@ -379,14 +385,17 @@ export class AuthController {
 			);
 
 			// Create user
-			let user = await this.userService.create({
-				...createAuthOrganizationDto,
-				isActive: true,
-				isVerified: false,
-				role: UserRoleEnum.ORGANIZATION_SUPER_ADMIN,
-				status: UserStatusEnum.CREATE_PASSWORD,
-				lastConnection: null,
-			});
+			let user = await this.userService.create(
+				{
+					...createAuthOrganizationDto,
+					isActive: true,
+					isVerified: false,
+					role: UserRoleEnum.ORGANIZATION_OWNER,
+					status: UserStatusEnum.CREATE_PASSWORD,
+					lastConnection: null,
+				},
+				session,
+			);
 
 			user = user.toObject();
 			delete user.password;
@@ -396,27 +405,37 @@ export class AuthController {
 			}
 
 			// Create employee
-			const employee = await this.employeesService.create({
-				...createAuthOrganizationDto,
-				userId: user._id.toString(),
-			});
+			const employee = await this.employeesService.create(
+				{
+					...createAuthOrganizationDto,
+					userId: user._id.toString(),
+				},
+				session,
+			);
 
 			if (!employee) {
 				throw new Error("Employee could not be created");
 			}
 
 			// Create organization
-			const organization = await this.organizationsService.create({
-				...createAuthOrganizationDto,
-				managerId: employee._id.toString(),
-			});
+			const organization = await this.organizationsService.create(
+				{
+					...createAuthOrganizationDto,
+					managerId: employee._id.toString(),
+				},
+				session,
+			);
 
 			if (!organization) {
 				throw new Error("Organization could not be created");
 			}
 
 			// Generate token for email confirmation
-			const payload = { sub: user._id, email: user.email };
+			const payload = {
+				sub: user._id,
+				email: user.email,
+				type: TokenTypeEnum.CONFIRMATION_ACCOUNT,
+			};
 			const token = Token.generateToken(payload);
 
 			// Email confirmation for the organization
@@ -736,7 +755,7 @@ export class AuthController {
 					},
 				});
 
-				throw new Error("Account not verified");
+				throw new Error("Initial password email sent");
 			}
 
 			if (
@@ -867,19 +886,17 @@ export class AuthController {
 		status: HttpStatus.INTERNAL_SERVER_ERROR,
 		description: "Internal Server Error - Something went wrong.",
 	})
-	@Get("confirm/:token")
-	async confirm(@Param("token") token: string, @Res() res: FastifyReply) {
+	@Post("confirm")
+	async confirm(@Body() tokenJwtDto: TokenJwtDto, @Res() res: FastifyReply) {
 		const path = "confirm";
 		const method = "Get";
 		const session = await this.connection.startSession();
 		session.startTransaction();
 
-		console.log("token", token);
-
 		try {
 			// Verify token
 			const verifyToken = Token.verifyToken(
-				token,
+				tokenJwtDto.token,
 				TokenTypeEnum.CONFIRMATION_ACCOUNT,
 			);
 
@@ -888,48 +905,43 @@ export class AuthController {
 			}
 
 			// Get payload
-			const payload = Token.getPayload(token);
+			const payload = Token.getPayload(tokenJwtDto.token);
 
 			if (!payload) {
 				throw new Error("Invalid token");
 			}
 
-			// Find user
-			const user = await this.userService.findOne({
-				_id: payload.sub.toString(),
-			});
+			const userTypeInfos = await this.userService.getUserTypeInfos(
+				{
+					id: payload.sub,
+				},
+				session,
+			);
 
-			if (!user) {
-				throw new Error("User not found");
-			}
+			const user = userTypeInfos.user;
+			const userInfo = userTypeInfos.userInfo;
 
-			if (!user.isVerified) {
+			if (user.isVerified) {
 				throw new Error("Invalid token");
 			}
 
-			// Find client
-			const client = await this.clientService.findOne({
-				userId: user._id.toString(),
-			});
-
-			if (!client) {
-				throw new Error("Client not found");
-			}
-
 			// Check if token is expired
-			const isExpired = Token.isTokenExpired(token);
+			const isExpired = Token.isTokenExpired(tokenJwtDto.token);
 
 			if (isExpired) {
-				const newToken = await Token.generateToken({
-					id: user._id,
+				const payload = {
+					sub: user._id,
 					email: user.email,
-				});
+					type: TokenTypeEnum.CONFIRMATION_ACCOUNT,
+				};
+
+				const newToken = Token.generateToken(payload);
 
 				// Email confirmation for the client
 				await this.mailHelper.sendConfirmAccountClient({
 					to: [user.email],
 					templateDatas: {
-						firstName: client[0].firstName,
+						firstName: userInfo.firstName,
 						token: newToken,
 					},
 				});
@@ -939,7 +951,7 @@ export class AuthController {
 
 			// Update user status
 			await this.userService.update(user.id, {
-				status: UserStatusEnum.AVAILABLE,
+				isVerified: true,
 			});
 
 			await session.commitTransaction();
@@ -1125,15 +1137,15 @@ export class AuthController {
 	}
 
 	/**
-	 * Reset or init password
-	 * @param resetPasswordDto : ResetPasswordDto
+	 * Init or init password
+	 * @param initPasswordDto : InitPasswordDto
 	 * @param res : Response
 	 * @returns : Response
 	 */
-	@ApiOperation({ summary: "Reset or init password" })
+	@ApiOperation({ summary: "Init or init password" })
 	@ApiResponse({
 		status: HttpStatus.OK,
-		description: "Password successfully reset or initialized.",
+		description: "Password successfully init or initialized.",
 	})
 	@ApiResponse({
 		status: HttpStatus.BAD_REQUEST,
@@ -1147,13 +1159,13 @@ export class AuthController {
 		status: HttpStatus.INTERNAL_SERVER_ERROR,
 		description: "Internal Server Error - Something went wrong.",
 	})
-	@Put("reset-password")
-	async resetPassword(
-		@Body() resetPasswordDto: ResetPasswordDto,
+	@Put("init-password")
+	async initPassword(
+		@Body() initPasswordDto: InitPasswordDto,
 		@Res() res: FastifyReply,
 	) {
-		const { token, newPassword } = resetPasswordDto;
-		const path = "reset-password";
+		const { token, newPassword } = initPasswordDto;
+		const path = "init-password";
 		const method = "Post";
 		const session = await this.connection.startSession();
 		session.startTransaction();
@@ -1181,36 +1193,11 @@ export class AuthController {
 			// Update password
 			const updatePassword = await this.userService.update(
 				user._id.toString(),
-				{ password: user.password },
+				{ password: user.password, status: UserStatusEnum.AVAILABLE },
 			);
 
 			if (!updatePassword) {
 				throw new Error("The password could not be updated");
-			}
-
-			// Log the password reset
-			try {
-				const client = await this.clientService.findWhere({
-					where: {
-						userId: user._id.toString(),
-					},
-				});
-
-				if (!client || client.length === 0) {
-					throw new Error("Client not found");
-				}
-
-				// this.logHelper.log({
-				// 	ip: ip,
-				// 	user: req["user"],
-				// 	userInfos: req["userInfos"],
-				// 	level: LogLevelEnum.INFO,
-				// 	message: "User successfully registered",
-				// 	context: `AuthController > ${path}: `,
-				// 	metadata: { user, client },
-				// });
-			} catch (logError) {
-				console.error(`Failed to create log in ${path}: `, logError);
 			}
 
 			await session.commitTransaction();
@@ -1221,7 +1208,7 @@ export class AuthController {
 				method,
 				code: HttpStatus.OK,
 				subject: "auth",
-				data: { message: "Password successfully reset or initialized" },
+				data: { message: "Password successfully init or initialized" },
 			});
 		} catch (error) {
 			await session.abortTransaction();
@@ -1263,7 +1250,7 @@ export class AuthController {
 				method,
 				code: HttpStatus.INTERNAL_SERVER_ERROR,
 				subject: "auth",
-				error: "An error occurred while resetting the password",
+				error: "An error occurred while initing the password",
 			});
 		} finally {
 			session.endSession();
@@ -1280,7 +1267,7 @@ export class AuthController {
 	@ApiOperation({ summary: "Forgot Password" })
 	@ApiResponse({
 		status: HttpStatus.OK,
-		description: "Password reset link sent to the user's email.",
+		description: "Password init link sent to the user's email.",
 	})
 	@ApiResponse({
 		status: HttpStatus.BAD_REQUEST,
@@ -1320,13 +1307,13 @@ export class AuthController {
 					email: user.email,
 					type: TokenTypeEnum.RESET_PASSWORD,
 				};
-				const resetToken = Token.generateToken(payload);
+				const initToken = Token.generateToken(payload);
 
 				// Send email
-				const sendEmail = await this.mailHelper.sendResetPasswordEmail({
+				const sendEmail = await this.mailHelper.sendInitPasswordEmail({
 					to: [user.email],
 					templateDatas: {
-						token: resetToken,
+						token: initToken,
 					},
 				});
 
@@ -1335,7 +1322,7 @@ export class AuthController {
 				}
 			}
 
-			// Log the password reset
+			// Log the password init
 			// try {
 			// 	const client = await this.clientService.findOne({
 			// 		userId: user._id.toString(),
@@ -1358,7 +1345,7 @@ export class AuthController {
 				subject: "auth",
 				data: {
 					message:
-						"If this account exist, the password reset link sent to the user's email",
+						"If this account exist, the password init link sent to the user's email",
 				},
 			});
 		} catch (error) {

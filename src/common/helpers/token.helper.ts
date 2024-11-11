@@ -39,7 +39,7 @@ export class Token {
 				payload,
 				settings.REFRESH_JWT_SECRET,
 				{
-					expiresIn: "1d",
+					expiresIn: "7d",
 				},
 			);
 
@@ -54,24 +54,34 @@ export class Token {
 
 	public static verifyToken(token: string, type?: TokenTypeEnum) {
 		try {
-			const verified = jwt.verify(token, settings.JWT_SECRET);
+			// Utilise la méthode jwt.verify pour vérifier le token
+			const verified = jwt.verify(token, this.getSecret(type));
 
+			// Récupère et vérifie le type de payload
 			const payload = this.getPayload(token);
 
-			if (type && payload && payload.type !== type) {
+			if (payload && payload.type !== type) {
 				throw new Error("Token type does not match");
 			}
 
 			return verified;
 		} catch (error) {
-			console.log(error);
-			return "An error occurred while verifying the token";
+			// Gestion des erreurs spécifiques JWT
+			if (error.name === "TokenExpiredError") {
+				throw new Error("TokenExpiredError: The token has expired");
+			} else if (error.name === "JsonWebTokenError") {
+				throw new Error("JsonWebTokenError: Invalid token");
+			} else {
+				throw new Error("Token validation error");
+			}
 		}
 	}
 
 	public static isTokenExpired(token: string) {
 		try {
 			const decodedToken = jwt.decode(token) as any;
+
+			console.log(decodedToken);
 
 			if (!decodedToken || !decodedToken.exp) {
 				throw new Error("Token has no expiration date");
@@ -81,9 +91,16 @@ export class Token {
 			return isExpired;
 		} catch (error) {
 			console.log(error);
-			throw new Error(
-				"An error occurred while checking the token expiration",
-			);
+
+			if (error.message === "TokenExpiredError") {
+				throw new Error(
+					"An error occurred while getting the token payload",
+				);
+			} else {
+				throw new Error(
+					"An error occurred while checking the token expiration",
+				);
+			}
 		}
 	}
 
@@ -101,6 +118,17 @@ export class Token {
 			throw new Error(
 				"An error occurred while getting the token payload",
 			);
+		}
+	}
+
+	private static getSecret(type: TokenTypeEnum) {
+		switch (type) {
+			case TokenTypeEnum.ACCESS:
+				return settings.ACCESS_JWT_SECRET;
+			case TokenTypeEnum.REFRESH:
+				return settings.REFRESH_JWT_SECRET;
+			default:
+				return settings.JWT_SECRET;
 		}
 	}
 }

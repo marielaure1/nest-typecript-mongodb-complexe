@@ -52,6 +52,14 @@ import {
 	Employee,
 	EmployeeSchema,
 } from "@modules/employees/entities/employee.entity";
+import {
+	PermissionCategorie,
+	PermissionCategorieSchema,
+} from "@modules/permission-categories/entities/permission-categorie.entity";
+import {
+	Permission,
+	PermissionSchema,
+} from "@modules/permissions/entities/permission.entity";
 // import {
 // 	PromoCode,
 // 	PromoCodeSchema,
@@ -76,6 +84,11 @@ import {
 			{ name: Organization.name, schema: OrganizationSchema },
 			{ name: PlanPrice.name, schema: PlanPriceSchema },
 			{ name: Plan.name, schema: PlanSchema },
+			{
+				name: PermissionCategorie.name,
+				schema: PermissionCategorieSchema,
+			},
+			{ name: Permission.name, schema: PermissionSchema },
 			// { name: PromoCode.name, schema: PromoCodeSchema },
 			// { name: Subscription.name, schema: SubscriptionSchema },
 			// { name: Team.name, schema: TeamSchema },
