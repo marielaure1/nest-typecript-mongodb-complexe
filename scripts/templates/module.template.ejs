@@ -2,12 +2,15 @@ import { Module<% if (authMiddleware) { %>, MiddlewareConsumer<% } %> } from "@n
 import { AuthMiddleware } from "@middlewares/auth.middleware";<% } %>
 import { <%= pascalCase %>sController } from '@modules/<%= kebabCase %>s/<%= kebabCase %>s.controller';<% if (moduleService) { %>
 import { <%= pascalCase %>sService } from '@modules/<%= kebabCase %>s/<%= kebabCase %>s.service';<% } %>
+import { UserHelper } from "@modules/users/helpers/user.helper";
+import { MailHelper } from "@providers/mail/helpers/mail.helper";
+import { MailService } from "@providers/mail/mail.service";
 
 @Module({
   imports: [],
   controllers: [<%= pascalCase %>sController],
-  providers: [<% if (moduleService) { %><%= pascalCase %>sService<% } %>],
-  exports: [<%= pascalCase %>sModule],
+  providers: [<% if (moduleService) { %><%= pascalCase %>sService<% } %>, MailService, MailHelper, UserHelper],
+  exports: [<% if (moduleService) { %><%= pascalCase %>sService,<% } %><%= pascalCase %>sModule],
 })
 export class <%= pascalCase %>sModule {<% if (authMiddleware) { %>
   configure(consumer: MiddlewareConsumer) {

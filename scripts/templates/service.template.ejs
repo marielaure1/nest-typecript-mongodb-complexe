@@ -1,10 +1,19 @@
-import { Injectable } from "@nestjs/common";<% if (moduleEntities) { %>
+// Base
+import { Injectable, Logger } from "@nestjs/common";
+<% if (moduleEntities) { %>
+// Dependencies
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";<% } %><% if (moduleDto) { %>
+import { Model } from "mongoose";<% } %>
+<% if (moduleDto) { %>
+// Dtos
 import { Create<%= pascalCase %>Dto } from "@modules/<%= kebabCase %>s/dto/create-<%= kebabCase %>.dto";
-import { Update<%= pascalCase %>Dto } from "@modules/<%= kebabCase %>s/dto/update-<%= kebabCase %>.dto";<% } %><% if (moduleEntities) { %>
-import { <%= pascalCase %>, <%= pascalCase %>Document } from "@modules/<%= kebabCase %>s/entities/<%= kebabCase %>.entity";<% } %><% if (moduleExtends) { %>
-import { AppService } from "@modules/app.service";
+import { Update<%= pascalCase %>Dto } from "@modules/<%= kebabCase %>s/dto/update-<%= kebabCase %>.dto";<% } %>
+
+// Entities<% if (moduleEntities) { %>
+import { <%= pascalCase %>, <%= pascalCase %>Document } from "@modules/<%= kebabCase %>s/entities/<%= kebabCase %>.entity";<% } %>
+
+// Services<% if (moduleExtends) { %>
+import { AppService } from "@src/app.service";
 <% } %>
 @Injectable()
 export class <%= pascalCase %>sService <% if (moduleExtends) { %>extends AppService<
@@ -12,6 +21,8 @@ export class <%= pascalCase %>sService <% if (moduleExtends) { %>extends AppServ
 	Create<%= pascalCase %>Dto,
 	Update<%= pascalCase %>Dto
 > <% } %>{
+	private readonly logger = new Logger(<%= pascalCase %>sService.name);
+
 	constructor(<% if (moduleEntities) { %>
 		@InjectModel(<%= pascalCase %>.name) private <%= camelCase %>sModel: Model<<%= pascalCase %>Document>,
 <% } %>) {<% if (moduleEntities) { %>

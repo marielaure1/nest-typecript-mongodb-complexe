@@ -1,5 +1,9 @@
-import Regex from "@constants/regex";
+import { regex } from "@constants/regex";
+import { UserDocument } from "@modules/users/entities/user.entity";
 
+/**
+ * Utility class for handling string-related operations.
+ */
 export class StringHelper {
 	/**
 	 * Removes the last occurrence of the letter "s" from a string.
@@ -22,6 +26,21 @@ export class StringHelper {
 	static capitalizeFirstLetter(str) {
 		if (!str) return str;
 		return str.charAt(0).toUpperCase() + str.slice(1);
+	}
+
+	/**
+	 * Converts a string to kebab-case in lowercase.
+	 *
+	 * @param {string} str - The original string.
+	 * @returns {string} - The kebab-case formatted string in lowercase.
+	 */
+	static kebabCaseLower(str) {
+		if (!str) return str;
+		return str
+			.replace(/([a-z])([A-Z])/g, "$1-$2") // Add hyphen between camelCase
+			.replace(/\s+/g, "-") // Replace spaces with hyphens
+			.replace(/[^a-zA-Z0-9-]/g, "") // Remove special characters
+			.toLowerCase();
 	}
 
 	/**
@@ -58,13 +77,25 @@ export class StringHelper {
 			.sort(() => 0.5 - Math.random())
 			.join("");
 
-		const regex = new RegExp(Regex.password);
+		const regexExp = new RegExp(regex.password);
 
-		if (regex.test(password)) {
+		if (regexExp.test(password)) {
 			return password;
 		} else {
 			// If the password does not match the regex, generate a new one
 			return this.generatePassword();
 		}
+	}
+
+	/**
+	 * Remove the password field from UserDocument
+	 * @param user
+	 * @returns
+	 */
+	static removePassword(user: UserDocument): UserDocument {
+		const userWithoutPassword = user.toObject();
+		delete userWithoutPassword.password;
+
+		return userWithoutPassword;
 	}
 }

@@ -1,20 +1,16 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CreateUserDto } from "@modules/users/dto/create-user.dto";
 // import { UpdateUserDto } from "@modules/users/dto/update-user.dto";
 // import { UpdateUserPasswordDto } from "@modules/users/dto/update-user-password.dto";
 import { User, UserDocument } from "@modules/users/entities/user.entity";
-import { AppService } from "src/app.service";
+import { AppService } from "@src/app.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { BookerEmployeesService } from "@modules/booker-employees/booker-employees.service";
-import { BookerEmployeeDocument } from "@modules/booker-employees/entities/booker-employee.entity";
-import { ClientsService } from "@modules/clients/clients.service";
-import { ClientDocument } from "@modules/clients/entities/client.entity";
-import { EmployeesService } from "@modules/employees/employees.service";
-import { EmployeeDocument } from "@modules/employees/entities/employee.entity";
-import { UserHelper } from "./helpers/user.helper";
-import { GetUserTypeInfosProps } from "./interfaces/user.interface";
+import axios from "axios";
+import { MailHelper } from "@providers/mail/helpers/mail.helper";
+import { Token } from "@helpers/token.helper";
+import { TokenTypeEnum } from "@enums/token-type.enum";
 
 @Injectable()
 export class UsersService extends AppService<
@@ -22,75 +18,83 @@ export class UsersService extends AppService<
 	CreateUserDto,
 	UpdateUserDto
 > {
+	private readonly logger = new Logger(UsersService.name);
+
 	constructor(
 		@InjectModel(User.name) private usersModel: Model<UserDocument>,
-		private readonly bookerEmployeesService: BookerEmployeesService,
-		private readonly employeesService: EmployeesService,
-		private readonly clientService: ClientsService,
-		private readonly userHelper: UserHelper,
+		private readonly mailHelper: MailHelper,
 	) {
 		super(usersModel);
 	}
 
-	async getUserTypeInfos(
-		getUserTypeInfosProps: GetUserTypeInfosProps,
-		session?: any,
-	) {
-		let user: UserDocument = null;
+	async findOneByEmail(email: string): Promise<User> {
+		try {
+			const findOne = await this.usersModel
+				.findOne({
+					filter: { email },
+				})
+				.exec();
 
-		if (getUserTypeInfosProps.id) {
-			user = await this.findOneById(getUserTypeInfosProps.id, session);
-		} else if (getUserTypeInfosProps.email) {
-			user = await this.findOne(
-				{ email: getUserTypeInfosProps.email },
-				session,
+			return findOne;
+		} catch (error: any) {
+			this.logger.error(
+				`[ERROR] => UsersModule > UsersService > findOneByEmail : `,
+				error,
 			);
 		}
+	}
 
-		if (!user) {
-			throw new Error("User not found");
+	async validateOAuthLoginWithAccessToken(accessToken: string): Promise<any> {
+		try {
+			const response = await axios.get(
+				"https://www.googleapis.com/oauth2/v3/userinfo",
+				{
+					headers: { Authorization: `Bearer ${accessToken}` },
+				},
+			);
+
+			return response.data;
+		} catch (error: any) {
+			this.logger.error(
+				`[ERROR] => UsersModule > UsersService > validateOAuthLoginWithAccessToken : `,
+				error,
+			);
+			throw new Error("Invalid Google token");
 		}
+	}
 
-		let userInfo:
-			| BookerEmployeeDocument
-			| EmployeeDocument
-			| ClientDocument = null;
+	async sendConfirmAccountUser({
+		user,
+		canThrowError = false,
+	}: {
+		user: UserDocument;
+		canThrowError?: boolean;
+	}) {
+		try {
+			const newToken = await Token.generateToken({
+				sub: user._id,
+				email: user.email,
+				type: TokenTypeEnum.CONFIRMATION_ACCOUNT,
+			});
 
-		const userType = UserHelper.getUserType(user.role);
-
-		if (userType === "Booker") {
-			// Find Booker employee
-			userInfo = await this.bookerEmployeesService.findOne(
-				{ userId: user._id.toString() },
-				session,
+			// Email confirmation for the client
+			await this.mailHelper.sendConfirmAccountUser({
+				to: [user.email],
+				templateDatas: {
+					// firstName: client[0].firstName,
+					token: newToken,
+				},
+			});
+		} catch (error: any) {
+			this.logger.error(
+				`[ERROR] => UsersModule > UsersService > sendConfirmAccountUser : `,
+				JSON.stringify(error),
 			);
 
-			if (!userInfo) {
-				throw new Error("Booker employee not found");
-			}
-		} else if (userType === "Employee") {
-			// Find Employee
-			userInfo = await this.employeesService.findOne(
-				{ userId: user._id.toString() },
-				session,
-			);
-
-			if (!userInfo) {
-				throw new Error("Employee not found");
-			}
-		} else {
-			// Find Client
-			userInfo = await this.clientService.findOne(
-				{ userId: user._id.toString() },
-				session,
-			);
-
-			if (!userInfo) {
-				throw new Error("Client not found");
+			if (canThrowError) {
+				throw new Error("Email could not be sent");
 			}
 		}
-
-		return { user, userInfo, userType };
 	}
 
 	// async updateEmail(
@@ -103,7 +107,7 @@ export class UsersService extends AppService<
 	// 		return this.usersModel
 	// 			.findOneAndUpdate({ email }, updateUserEmailDto)
 	// 			.exec();
-	// 	} catch (error) {
+	// 	} catch (error: any) {
 	// 		console.log(error);
 	// 	}
 	// }

@@ -10,17 +10,14 @@ export class Employee {
 	@Prop({ required: true, unique: true })
 	userId: string;
 
-	@Prop({ required: true })
-	lastName: string;
+	@Prop({ required: false, unique: true, sparse: true })
+	phone?: string;
 
-	@Prop({ required: true })
-	firstName: string;
+	@Prop({ default: true })
+	notificationEmail?: boolean;
 
-	@Prop()
-	notificationEmail: boolean;
-
-	@Prop()
-	notificationSms: boolean;
+	@Prop({ default: false })
+	notificationSms?: boolean;
 
 	createdAt?: Date;
 	updatedAt?: Date;

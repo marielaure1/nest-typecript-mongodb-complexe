@@ -1,14 +1,4 @@
-import {
-	IsString,
-	IsNotEmpty,
-	IsOptional,
-	IsObject,
-	IsArray,
-	ValidateNested,
-	IsDate,
-	IsNumber,
-} from "class-validator";
-import { Type } from "class-transformer";
+import { IsString, IsNotEmpty } from "class-validator";
 
 export class FlagDto {
 	@IsString()

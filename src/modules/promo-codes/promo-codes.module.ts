@@ -8,11 +8,7 @@ import { MailHelper } from "@providers/mail/helpers/mail.helper";
 @Module({
 	imports: [],
 	controllers: [PromoCodesController],
-	providers: [
-		PromoCodesService,
-		MailService,
-		MailHelper,
-	],
+	providers: [PromoCodesService, MailService, MailHelper],
 	exports: [],
 })
 export class PromoCodesModule {

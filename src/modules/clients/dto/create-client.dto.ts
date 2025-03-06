@@ -1,30 +1,21 @@
-import { IsNotEmpty, IsString, IsOptional, IsBoolean } from "class-validator";
+import {
+	IsNotEmpty,
+	IsString,
+	IsOptional,
+	IsBoolean,
+	Matches,
+} from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { regex } from "@constants/regex";
 
 export class CreateClientDto {
-	@IsOptional()
-	@IsString()
 	@ApiPropertyOptional({
 		description: "The user ID associated with the client",
 		example: "12345abcde",
 	})
+	@IsOptional()
+	@IsString()
 	userId?: string;
-
-	@ApiProperty({
-		description: "The first name of the client",
-		example: "John",
-	})
-	@IsNotEmpty()
-	@IsString()
-	firstName: string;
-
-	@ApiProperty({
-		description: "The last name of the client",
-		example: "Doe",
-	})
-	@IsNotEmpty()
-	@IsString()
-	lastName: string;
 
 	@ApiPropertyOptional({
 		description: "The address1 of the client",
@@ -66,19 +57,27 @@ export class CreateClientDto {
 	@IsString()
 	country?: string;
 
+	@ApiPropertyOptional({
+		description: "The phone number of the user",
+		example: "+1234567890",
+	})
+	@IsOptional()
+	@Matches(regex.phone)
+	phone?: string;
+
 	@ApiProperty({
 		description: "The client wants email notifications",
 		example: true,
 	})
-	@IsNotEmpty()
+	@IsOptional()
 	@IsBoolean()
-	notificationEmail: boolean;
+	notificationEmail?: boolean;
 
 	@ApiProperty({
 		description: "The client wants SMS notifications",
 		example: true,
 	})
-	@IsNotEmpty()
+	@IsOptional()
 	@IsBoolean()
-	notificationSms: boolean;
+	notificationSms?: boolean;
 }

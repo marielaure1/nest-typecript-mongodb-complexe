@@ -1,29 +1,401 @@
+// Base
 import {
 	Controller,
-} from '@nestjs/common';<% if (moduleService) { %>
-import { <%= pascalCase %>sService } from '@modules/<%= kebabCase %>s/<%= kebabCase %>s.service';<% } %><% if (moduleDto) { %>
-import { Create<%= pascalCase %>Dto } from '@modules/<%= kebabCase %>s/dto/create-<%= kebabCase %>.dto';
-import { Update<%= pascalCase %>Dto } from '@modules/<%= kebabCase %>s/dto/update-<%= kebabCase %>.dto';<% } %><% if (moduleEntities) { %>
-import { <%= pascalCase %>Document } from '@modules/<%= kebabCase %>s/entities/<%= kebabCase %>.entity';<% } %><% if (moduleExtends) { %>
-import { AppController } from '@modules/app.controller';<% } %><% if (documentation) { %>
+	Get,
+	Post,
+	Body,
+	Param,
+	Delete,
+	Res,
+	Put,
+	Req,
+	Ip,
+	HttpStatus,
+	Patch,
+	UseInterceptors,
+} from "@nestjs/common";
+<% if (documentation) { %>
 import {
 	ApiTags,
 	ApiOperation,
 	ApiResponse,
 	ApiBearerAuth,
-} from '@nestjs/swagger';<% } %>
-import { Response } from 'express';
+	ApiParam,
+} from '@nestjs/swagger';
+<% } %>
+
+// Dependencies
+import type { Response, Request } from "express";
+import { Connection } from "mongoose";
+
+// Service<% if (moduleService) { %>
+import { <%= pascalCase %>sService } from '@modules/<%= kebabCase %>s/<%= kebabCase %>s.service';<% } %>
+
+// Dtos<% if (moduleDto) { %>
+import { Create<%= pascalCase %>Dto } from '@modules/<%= kebabCase %>s/dto/create-<%= kebabCase %>.dto';
+import { Update<%= pascalCase %>Dto } from '@modules/<%= kebabCase %>s/dto/update-<%= kebabCase %>.dto';<% } %>
+
+// Entities<% if (moduleEntities) { %>
+import { <%= pascalCase %>Document } from '@modules/<%= kebabCase %>s/entities/<%= kebabCase %>.entity';<% } %>
+
+// Controller<% if (moduleExtends) { %>
+import { AppController } from '@src/app.controller';<% } %>
+
+// Guards
+// import { AuthGuard } from "@guards/auth.guard";
+
+// Enums
+
+// Helpers
+import { Responses } from "@helpers/responses.helper";
+import { LogsHelper } from "@modules/logs/helpers/logs.helper";
+
+// Interceptor
+import { LogInterceptor } from "@interceptors/log.interceptor";
+import { NodeEnvEnum } from "@enums/configs/node-env.enum";
+
 <% if (documentation) { %>
 @ApiTags('<%= kebabCase %>s')<% } %>
 @Controller('<%= kebabCase %>s')
+@UseInterceptors(LogInterceptor)
 export class <%= pascalCase %>sController <% if (moduleExtends) { %>extends AppController<
 	<%= pascalCase %>Document,
 	Create<%= pascalCase %>Dto,
 	Update<%= pascalCase %>Dto
 > <% } %>{
-
-	constructor(<% if (moduleService) { %>private readonly <%= camelCase %>sService: <%= pascalCase %>sService<% } %>) {<% if (moduleExtends) { %>
-		super(<%= camelCase %>sService, '<%= camelCase %>s');
+	/**
+	 * Creates an instance of AuthController.
+	 *
+	 * @param {<%= camelCase %>sService} <%= pascalCase %>sService - The service handling user operations.
+	 * @param {Connection} connection - The database connection instance.
+	 * @param {LogsHelper} logsHelper - The helper service for logging.
+	 */
+	constructor(
+		<% if (moduleService) { %>private readonly <%= camelCase %>sService: <%= pascalCase %>sService<% } %>,
+		public readonly connection: Connection,
+		private readonly logsHelper: LogsHelper,
+	) {<% if (moduleExtends) { %>
+		super(<%= camelCase %>sService, '<%= camelCase %>s', connection);
 <% } %>}
 
+	<% if (documentation) { %>
+	@ApiOperation({ summary: "Create a new <%= camelCase %>" })
+	@ApiResponse({
+		status: HttpStatus.CREATED,
+		description: "The <%= camelCase %> has been successfully created.",
+		content: {
+			"application/json": {
+				example: {
+					status: 201,
+					success: true,
+					data: {},
+					message: "",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.BAD_REQUEST,
+		description: "Invalid input data.",
+		content: {
+			"application/json": {
+				example: {
+					fieldsErrors: [
+						{},
+					],
+					error: "Invalid credentials",
+					status: 400,
+					success: false,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: "Internal server error.",
+		content: {
+			"application/json": {
+				example: {
+					status: 500,
+					success: false,
+					error: "An error occurred while creating the <%= camelCase %>.",
+				},
+			},
+		},
+	})
+	@ApiBearerAuth()<% } %>
+	@Post()
+	async create(
+		@Body() create<%= pascalCase %>Dto: Create<%= pascalCase %>Dto,
+		@Res() res: Response,
+		@Req() req: Request, 
+		@Ip() ip: string
+	) {
+		return super.create(create<%= pascalCase %>Dto, res, req, ip);
+	}
+
+	<% if (documentation) { %>
+	@ApiOperation({ summary: "Get all <%= kebabCase %>s" })
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: "Return all <%= kebabCase %>s.",
+		content: {
+			"application/json": {
+				example: {
+					status: 200,
+					success: true,
+					data: {},
+					message: "",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.NOT_FOUND,
+		description: "Not Found -  .",
+		content: {
+			"application/json": {
+				example: {
+					status: 404,
+					success: false,
+					error: "<%= pascalCase %>s not found.",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: "Internal server error.",
+		content: {
+			"application/json": {
+				example: {
+					status: 500,
+					success: false,
+					error: "An error occurred while creating the <%= camelCase %>.",
+				},
+			},
+		},
+	})
+	@ApiBearerAuth()<% } %>
+	@Get()
+	async findAll(
+		@Res() res: Response,
+		@Req() req: Request, 
+		@Ip() ip: string
+	) {
+		return super.findAll(res, req, ip);
+	}
+
+	<% if (documentation) { %>
+	@ApiOperation({ summary: "Get a <%= kebabCase %> by id" })
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: "Return a <%= kebabCase %>.",
+		content: {
+			"application/json": {
+				example: {
+					status: 200,
+					success: true,
+					data: {},
+					message: "",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.NOT_FOUND,
+		description: "Not Found -  .",
+		content: {
+			"application/json": {
+				example: {
+					status: 404,
+					success: false,
+					error: "<%= pascalCase %> not found.",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: "Internal server error.",
+		content: {
+			"application/json": {
+				example: {
+					status: 500,
+					success: false,
+					error: "An error occurred while creating the <%= camelCase %>.",
+				},
+			},
+		},
+	})
+	@ApiParam({
+		name: "id",
+		type: String,
+		description: "The id of the <%= camelCase %>.",
+		required: true,
+		example: "6776adeb12733b2334e9004b",
+	})
+	@ApiBearerAuth()<% } %>
+	@Get(":id")
+	async findOne(
+		@Param("id") id: string, 
+		@Res() res: Response,
+		@Req() req: Request, 
+		@Ip() ip: string
+	) {
+		return super.findOne(id, res, req, ip);
+	}
+
+	<% if (documentation) { %>
+	@ApiOperation({ summary: "Update a <%= kebabCase %> by id" })
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: "The <%= kebabCase %> has been successfully updated.",
+		content: {
+			"application/json": {
+				example: {
+					status: 200,
+					success: true,
+					data: {},
+					message: "",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.BAD_REQUEST,
+		description: "Invalid input data.",
+		content: {
+			"application/json": {
+				example: {
+					fieldsErrors: [
+						{},
+					],
+					error: "Invalid credentials",
+					status: 400,
+					success: false,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.NOT_FOUND,
+		description: "Not Found -  .",
+		content: {
+			"application/json": {
+				example: {
+					status: 404,
+					success: false,
+					error: "<%= pascalCase %> not found.",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: "Internal server error.",
+		content: {
+			"application/json": {
+				example: {
+					status: 500,
+					success: false,
+					error: "An error occurred while creating the <%= camelCase %>.",
+				},
+			},
+		},
+	})
+	@ApiParam({
+		name: "id",
+		type: String,
+		description: "The id of the <%= camelCase %>.",
+		required: true,
+		example: "6776adeb12733b2334e9004b",
+	})
+	@ApiBearerAuth()<% } %>
+	@Put(":id")
+	async update(
+		@Param("id") id: string,
+		@Body() update<%= pascalCase %>Dto: Update<%= pascalCase %>Dto,
+		@Res() res: Response,
+		@Req() req: Request, 
+		@Ip() ip: string
+	) {
+		return super.update(id, update<%= pascalCase %>Dto, res, req, ip);
+	}
+
+	<% if (documentation) { %>
+	@ApiOperation({ summary: "Delete a <%= kebabCase %> by id" })
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: "The <%= kebabCase %> has been successfully deleted.",
+		content: {
+			"application/json": {
+				example: {
+					status: 200,
+					success: true,
+					data: {},
+					message: "",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.BAD_REQUEST,
+		description: "Invalid input data.",
+		content: {
+			"application/json": {
+				example: {
+					fieldsErrors: [
+						{},
+					],
+					error: "Invalid credentials",
+					status: 400,
+					success: false,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.NOT_FOUND,
+		description: "Not Found -  .",
+		content: {
+			"application/json": {
+				example: {
+					status: 404,
+					success: false,
+					error: "<%= pascalCase %> not found.",
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: "Internal server error.",
+		content: {
+			"application/json": {
+				example: {
+					status: 500,
+					success: false,
+					error: "An error occurred while creating the <%= camelCase %>.",
+				},
+			},
+		},
+	})
+	@ApiParam({
+		name: "id",
+		type: String,
+		description: "The id of the <%= camelCase %>.",
+		required: true,
+		example: "6776adeb12733b2334e9004b",
+	})
+	@ApiBearerAuth()<% } %>
+	@Delete(":id")
+	async remove(
+		@Param("id") id: string, 
+		@Res() res: Response,
+		@Req() req: Request, 
+		@Ip() ip: string
+	) {
+		return super.remove(id, res, req, ip);
+	}
 }

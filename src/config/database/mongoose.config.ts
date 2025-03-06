@@ -1,103 +1,130 @@
 // CONFIGS
 import { Module, Global } from "@nestjs/common";
 import { getConnectionToken, MongooseModule } from "@nestjs/mongoose";
-// import { ConfigModule, ConfigService } from "@nestjs/config";
-import { settings } from "@constants/settings";
+import { ConfigService } from "@nestjs/config";
+
+// Dependencies
+import { Connection } from "mongoose";
 
 // MODULES
-import { Client, ClientSchema } from "@modules/clients/entities/client.entity";
-// import {
-// 	CustomField,
-// 	CustomFieldSchema,
-// } from "@modules/custom-fields/entities/custom-field.entity";
-// import {
-// 	Customer,
-// 	CustomerSchema,
-// } from "@modules/customers/entities/customer.entity";
-// // import { Notification, NotificationSchema } from '@modules/notifications/entities/notification.entity';
-// import {
-// 	Payment,
-// 	PaymentSchema,
-// } from "@modules/payments/entities/payment.entity";
-// import { Plan, PlanSchema } from "@modules/plans/entities/plan.entity";
-// import {
-// 	Subscription,
-// 	SubscriptionSchema,
-// } from "@modules/subscriptions/entities/subscription.entity";
+
+// Account
 import { User, UserSchema } from "@modules/users/entities/user.entity";
-import { Log, LogSchema } from "@modules/logs/entities/log.entity";
-import {
-	BookerEmployee,
-	BookerEmployeeSchema,
-} from "@modules/booker-employees/entities/booker-employee.entity";
-// import {
-// 	Employee,
-// 	EmployeeSchema,
-// } from "@modules/employees/entities/employee.entity";
-// import {
-// 	Establishment,
-// 	EstablishmentSchema,
-// } from "@modules/establishments/entities/establishment.entity";
-import {
-	Organization,
-	OrganizationSchema,
-} from "@modules/organizations/entities/organization.entity";
-import {
-	PlanPrice,
-	PlanPriceSchema,
-} from "@modules/plan-prices/entities/plan-price.entity";
-import { Plan, PlanSchema } from "@modules/plans/entities/plan.entity";
-import { Connection } from "mongoose";
+import { Client, ClientSchema } from "@modules/clients/entities/client.entity";
 import {
 	Employee,
 	EmployeeSchema,
 } from "@modules/employees/entities/employee.entity";
+import { Staff, StaffSchema } from "@modules/staffs/entities/staff.entity";
+
+// Products
+import { Plan, PlanSchema } from "@modules/plans/entities/plan.entity";
+import { Option, OptionSchema } from "@modules/options/entities/option.entity";
 import {
-	PermissionCategorie,
-	PermissionCategorieSchema,
-} from "@modules/permission-categories/entities/permission-categorie.entity";
+	Feature,
+	FeatureSchema,
+} from "@modules/features/entities/feature.entity";
+import {
+	PlanFeature,
+	PlanFeatureSchema,
+} from "@modules/plan-features/entities/plan-feature.entity";
+
+// Subscriptions
+
+// Companies
+import {
+	Organization,
+	OrganizationSchema,
+} from "@modules/organizations/entities/organization.entity";
+import { Team, TeamSchema } from "@modules/teams/entities/team.entity";
+
+// Activities
+import { Log, LogSchema } from "@modules/logs/entities/log.entity";
+
+// Security
+import {
+	RefreshToken,
+	RefreshTokenSchema,
+} from "@modules/auth/entities/refresh-token.entity";
+import {
+	PlanOptionFeature,
+	PlanOptionFeatureSchema,
+} from "@modules/plan-option-features/entities/plan-option-feature.entity";
+import {
+	OptionFeature,
+	OptionFeatureSchema,
+} from "@modules/option-features/entities/option-feature.entity";
+
+// Authorization
+import { Role, RoleSchema } from "@modules/roles/entities/role.entity";
 import {
 	Permission,
 	PermissionSchema,
 } from "@modules/permissions/entities/permission.entity";
-// import {
-// 	PromoCode,
-// 	PromoCodeSchema,
-// } from "@modules/promo-codes/entities/promo-code.entity";
-// import {
-// 	Subscription,
-// 	SubscriptionSchema,
-// } from "@modules/subscriptions/entities/subscription.entity";
-// import { Team, TeamSchema } from "@modules/teams/entities/team.entity";
+import {
+	RolePermission,
+	RolePermissionSchema,
+} from "@modules/role-permissions/entities/role-permission.entity";
+import {
+	UserRole,
+	UserRoleSchema,
+} from "@modules/user-roles/entities/user-role.entity";
+import {
+	UserPermission,
+	UserPermissionSchema,
+} from "@modules/user-permissions/entities/user-permission.entity";
+
+// Config
 
 @Global()
 @Module({
 	imports: [
-		MongooseModule.forRoot(settings.MONGODB_URL),
+		MongooseModule.forRootAsync({
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService) => ({
+				uri: configService.get<string>("MONGODB_URL"),
+			}),
+		}),
 		MongooseModule.forFeature([
+			// Account
 			{ name: User.name, schema: UserSchema },
 			{ name: Client.name, schema: ClientSchema },
-			{ name: Log.name, schema: LogSchema },
-			{ name: BookerEmployee.name, schema: BookerEmployeeSchema },
+			{ name: Staff.name, schema: StaffSchema },
 			{ name: Employee.name, schema: EmployeeSchema },
-			// { name: Establishment.name, schema: EstablishmentSchema },
-			{ name: Organization.name, schema: OrganizationSchema },
-			{ name: PlanPrice.name, schema: PlanPriceSchema },
+
+			// Products
 			{ name: Plan.name, schema: PlanSchema },
-			{
-				name: PermissionCategorie.name,
-				schema: PermissionCategorieSchema,
-			},
-			{ name: Permission.name, schema: PermissionSchema },
+			{ name: Option.name, schema: OptionSchema },
+			{ name: PlanFeature.name, schema: PlanFeatureSchema },
+			{ name: Feature.name, schema: FeatureSchema },
+			{ name: PlanOptionFeature.name, schema: PlanOptionFeatureSchema },
+			{ name: OptionFeature.name, schema: OptionFeatureSchema },
 			// { name: PromoCode.name, schema: PromoCodeSchema },
+
+			// Subscriptions
 			// { name: Subscription.name, schema: SubscriptionSchema },
-			// { name: Team.name, schema: TeamSchema },
-			// { name: CustomField.name, schema: CustomFieldSchema },
-			// { name: Customer.name, schema: CustomerSchema },
-			// // { name: Notification.name, schema: NotificationSchema },
 			// { name: Payment.name, schema: PaymentSchema },
-			// { name: Plan.name, schema: PlanSchema },
-			// { name: Subscription.name, schema: SubscriptionSchema },
+
+			// Companies
+			{ name: Organization.name, schema: OrganizationSchema },
+			{ name: Team.name, schema: TeamSchema },
+
+			// Activities
+			{ name: Log.name, schema: LogSchema },
+			// { name: Notification.name, schema: NotificationSchema },
+
+			// Security
+			{ name: RefreshToken.name, schema: RefreshTokenSchema },
+
+			// Config
+			// { name: CustomField.name, schema: CustomFieldSchema },
+
+			// Authorization
+			{ name: Role.name, schema: RoleSchema },
+			{ name: Permission.name, schema: PermissionSchema },
+			{ name: RolePermission.name, schema: RolePermissionSchema },
+			{ name: UserRole.name, schema: UserRoleSchema },
+			{ name: UserPermission.name, schema: UserPermissionSchema },
 		]),
 	],
 	providers: [

@@ -1,4 +1,27 @@
-import { PartialType } from "@nestjs/swagger";
-import { CreatePlanDto } from "@modules/plans/dto/create-plan.dto";
+import {
+	IsNotEmpty,
+	IsString,
+	IsNumber,
+	IsBoolean,
+	IsObject,
+	IsOptional,
+} from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
-export class UpdatePlanDto extends PartialType(CreatePlanDto) {}
+export class UpdatePlanDto {
+	@IsOptional()
+	@IsBoolean()
+	active?: object;
+
+	@IsOptional()
+	@IsBoolean()
+	mostPopular?: boolean;
+
+	@IsOptional()
+	@IsNumber()
+	design?: number;
+
+	@IsOptional()
+	@IsBoolean()
+	btnContactUs?: boolean;
+}

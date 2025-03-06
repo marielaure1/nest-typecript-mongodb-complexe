@@ -1,29 +1,39 @@
 import { Injectable } from "@nestjs/common";
-import { MailService } from "@src/providers/mail/mail.service";
-import { settings } from "@constants/settings";
 import { CONFIG } from "@config/config";
+import { configService } from "@constants/env";
+import { MailService } from "@src/providers/mail/mail.service";
 
+/**
+ * Service helper for sending various authentication-related emails.
+ */
 @Injectable()
 export class MailHelper {
-	private readonly sender = "no-reply@NOM.com";
+	private readonly sender = CONFIG.infos.company.emails.noReply;
 
+	/**
+	 * Initializes the MailHelper service.
+	 *
+	 * @param {MailService} mailService - The mail service used for sending emails.
+	 */
 	constructor(private readonly mailService: MailService) {}
 
 	// Account methods
 
 	/**
-	 * @description : This method sends a confirmation email to the client
-	 * @param params : ConfirmAccountProps
+	 * Sends an account confirmation email to a user.
+	 *
+	 * @param {ConfirmAccountUserProps} params - Email details and recipient information.
+	 * @returns {Promise<any>} - The result of the email sending process.
 	 */
-	public async sendConfirmAccountClient(params: ConfirmAccountClientProps) {
+	public async sendConfirmAccountUser(params: ConfirmAccountUserProps) {
 		const sendEmail = await this.mailService.sendMail({
 			to: params.to,
 			sender: params.sender ?? this.sender,
 			subject: `Welcome to ${CONFIG.infos.company.name}`,
-			template: "./auth/confirmation-client",
+			template: "./auth/confirmation-account-user",
 			templateDatas: {
-				firstName: params.templateDatas.firstName,
-				url: `${settings.FRONTEND_URL}auth/confirm/${params.templateDatas.token}`,
+				// firstName: params.templateDatas.firstName,
+				url: `${configService.get<string>("FRONTEND_URL")}/admin/auth/confirm-account?token=${params.templateDatas.token}`,
 			},
 		});
 
@@ -31,8 +41,10 @@ export class MailHelper {
 	}
 
 	/**
-	 * @description : This method sends a confirmation email to the client
-	 * @param params : ConfirmAccountProps
+	 * Sends an account confirmation email to an organization.
+	 * @experimental
+	 * @param {ConfirmAccountOrganizationProps} params - Email details and recipient information.
+	 * @returns {Promise<any>} - The result of the email sending process.
 	 */
 	public async sendConfirmAccountOrganization(
 		params: ConfirmAccountOrganizationProps,
@@ -45,13 +57,40 @@ export class MailHelper {
 			templateDatas: {
 				organizationName: params.templateDatas.organizationName,
 				userEmail: params.templateDatas.userEmail,
-				url: `${settings.FRONTEND_URL}auth/confirm/${params.templateDatas.token}`,
+				url: `${configService.get<string>("FRONTEND_URL")}/auth/confirm?token=${params.templateDatas.token}`,
 			},
 		});
 
 		return sendEmail;
 	}
 
+	/**
+	 * @description Sends an account confirmation email to a staff.
+	 * @experimental
+	 * @param {ConfirmAccountStaffProps} params - Email details and recipient information.
+	 * @returns {Promise<any>} - The result of the email sending process.
+	 */
+	public async sendConfirmAccountStaff(params: ConfirmAccountStaffProps) {
+		const sendEmail = await this.mailService.sendMail({
+			to: params.to,
+			sender: params.sender ?? this.sender,
+			subject: `Welcome to ${CONFIG.infos.company.name}`,
+			template: "./auth/confirmation-staff",
+			templateDatas: {
+				firstName: params.templateDatas.firstName,
+				url: `${configService.get<string>("FRONTEND_URL")}/admin/auth/confirm-account?token=${params.templateDatas.token}`,
+			},
+		});
+
+		return sendEmail;
+	}
+
+	/**
+	 * Sends a reset password email to the user.
+	 *
+	 * @param {ResetPasswordProps} params - Email details and recipient information.
+	 * @returns {Promise<any>} - The result of the email sending process.
+	 */
 	public async sendResetPasswordEmail(params: ResetPasswordProps) {
 		const sendEmail = await this.mailService.sendMail({
 			to: params.to,
@@ -59,13 +98,19 @@ export class MailHelper {
 			subject: "Reset your password",
 			template: "./auth/reset-password",
 			templateDatas: {
-				url: `${settings.FRONTEND_URL}auth/reset-password/${params.templateDatas.token}`,
+				url: `${configService.get<string>("FRONTEND_URL")}/admin/auth/reset-password?token=${params.templateDatas.token}`,
 			},
 		});
 
 		return sendEmail;
 	}
 
+	/**
+	 * Sends an initial password setup email to the user.
+	 * @experimental
+	 * @param {InitPasswordProps} params - Email details and recipient information.
+	 * @returns {Promise<any>} - The result of the email sending process.
+	 */
 	public async sendInitPasswordEmail(params: InitPasswordProps) {
 		const sendEmail = await this.mailService.sendMail({
 			to: params.to,
@@ -73,7 +118,7 @@ export class MailHelper {
 			subject: "Init your password",
 			template: "./auth/init-password",
 			templateDatas: {
-				url: `${settings.FRONTEND_URL}auth/init-password/${params.templateDatas.token}`,
+				url: `${configService.get<string>("FRONTEND_URL")}/admin/auth/reset-password?token=${params.templateDatas.token}`,
 			},
 		});
 
@@ -81,27 +126,34 @@ export class MailHelper {
 	}
 }
 
+/**
+ * @description Base interface for email parameters.
+ */
 interface BaseProps {
+	/** Recipient email addresses. */
 	to: string[];
+	/** Sender email address (optional). */
 	sender?: string;
+	/** Email subject (optional). */
 	subject?: string;
+	/** Email template data (optional). */
 	templateDatas?: object;
 }
 
 // Account interfaces
 
 /**
- * @description : This is the interface for the sendConfirmAccountClient method
+ * @description Interface for the `sendConfirmAccountUser` method.
  */
-interface ConfirmAccountClientProps extends BaseProps {
+interface ConfirmAccountUserProps extends BaseProps {
 	templateDatas?: {
-		firstName: string;
+		// firstName: string;
 		token: string;
 	};
 }
 
 /**
- * @description : This is the interface for the sendConfirmAccountOrganization method
+ * @description Interface for the `sendConfirmAccountOrganization` method.
  */
 interface ConfirmAccountOrganizationProps extends BaseProps {
 	templateDatas?: {
@@ -112,7 +164,17 @@ interface ConfirmAccountOrganizationProps extends BaseProps {
 }
 
 /**
- * @description : This is the interface for the sendResetPasswordEmail method
+ * @description Interface for the `sendConfirmAccountStaff` method.
+ */
+interface ConfirmAccountStaffProps extends BaseProps {
+	templateDatas?: {
+		firstName: string;
+		token: string;
+	};
+}
+
+/**
+ * @description Interface for the `sendResetPasswordEmail` method.
  */
 interface ResetPasswordProps extends BaseProps {
 	templateDatas?: {
@@ -121,7 +183,7 @@ interface ResetPasswordProps extends BaseProps {
 }
 
 /**
- * @description : This is the interface for the sendResetPasswordEmail method
+ * @description Interface for the `sendInitPasswordEmail` method.
  */
 interface InitPasswordProps extends BaseProps {
 	templateDatas?: {

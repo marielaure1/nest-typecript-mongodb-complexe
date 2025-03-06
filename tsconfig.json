@@ -6,7 +6,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
+    "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
@@ -18,58 +18,29 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      
-      /*
-      * Modules
-      */
-      "@modules/*": ["./src/modules/*"],
-      /*
-      * Config
-      */
-      "@config/*": ["./src/config/*"],
-      /*
-      * Jobs
-      */
-      "@jobs/*": ["./src/jobs/*"],
-      /*
-      * Providers
-      */
-      "@providers/*": ["src/providers/*"],
-      /*
-      * Common
-      */
-      "@constants/*": ["./src/common/constants/*"],
-      "@decorators/*": ["./src/common/decorators/*"],
-      "@dtos/*": ["./src/common/dtos/*"],
-      "@enums/*": ["./src/common/enums/*"],
-      "@types/*": ["./src/common/types/*"],
-      "@exceptions/*": ["./src/common/exceptions/*"],
-      "@guards/*": ["./src/common/guards/*"],
-      "@helpers/*": ["./src/common/helpers/*"],
-      "@interceptors/*": ["./src/common/interceptors/*"],
-      "@interfaces/*": ["./src/common/interfaces/*"],
-      "@middlewares/*": ["./src/common/middlewares/*"],
-      "@pipes/*": ["./src/common/pipes/*"],
-      "@serializers/*": ["./src/common/serializers/*"],
-      "@entities/*": ["./src/common/entities/*"],
-      /*
-      * src
-      */
-      "@src/*": ["./src/*"],
-      /*
-      * Test
-      */
-      "@test/*": ["./test/*"],
-      /*
-      * Views
-      */
-      "@views/*": ["./views/*"],
+      	"@modules/*": ["src/modules/*"],
+		"@config/*": ["src/config/*"],
+		"@jobs/*": ["src/jobs/*"],
+		"@providers/*": ["src/providers/*"],
+		"@constants/*": ["src/common/constants/*"],
+		"@decorators/*": ["src/common/decorators/*"],
+		"@dtos/*": ["src/common/dtos/*"],
+		"@enums/*": ["src/common/enums/*"],
+		"@types/*": ["src/common/types/*"],
+		"@exceptions/*": ["src/common/exceptions/*"],
+		"@guards/*": ["src/common/guards/*"],
+		"@helpers/*": ["src/common/helpers/*"],
+		"@interceptors/*": ["src/common/interceptors/*"],
+		"@interfaces/*": ["src/common/interfaces/*"],
+		"@middlewares/*": ["src/common/middlewares/*"],
+		"@pipes/*": ["src/common/pipes/*"],
+		"@serializers/*": ["src/common/serializers/*"],
+		"@entities/*": ["src/common/entities/*"],
+		"@src/*": ["src/*"],
+		"@test/*": ["test/*"],
+		"@views/*": ["views/*"],
     }, 
   },
-  "include": [
-      "src/**/*.ts",
-    ],
-    "exclude": [
-      "node_modules"
-    ]
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"],
 }

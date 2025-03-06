@@ -1,16 +1,16 @@
-import { Controller } from "@nestjs/common";
+import { Body, Controller, Post } from "@nestjs/common";
 import { SubscriptionsService } from "@modules/subscriptions/subscriptions.service";
 import { CreateSubscriptionDto } from "@modules/subscriptions/dto/create-subscription.dto";
 import { UpdateSubscriptionDto } from "@modules/subscriptions/dto/update-subscription.dto";
 import { SubscriptionDocument } from "@modules/subscriptions/entities/subscription.entity";
-import { AppController } from "src/app.controller";
+import { AppController } from "@src/app.controller";
 import {
 	ApiTags,
 	ApiOperation,
 	ApiResponse,
 	ApiBearerAuth,
 } from "@nestjs/swagger";
-import { FastifyReply } from "fastify";
+import type { Response, Request } from "express";
 
 import { Connection } from "mongoose";
 import { LogsService } from "@modules/logs/logs.service";
@@ -28,4 +28,14 @@ export class SubscriptionsController extends AppController<
 	) {
 		super(subscriptionsService, "subscriptions", connection);
 	}
+
+	@Post()
+	async subscribe(@Body() createSubscriptionDto: CreateSubscriptionDto) {}
+
+	// TODO: s'abonner
+	// found all
+	// found one
+	// TODO: changer moyen de pâiement
+	// TODO: changer de plan
+	// TODO: se desabonner
 }

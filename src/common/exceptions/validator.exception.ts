@@ -1,43 +1,48 @@
 import {
-	ArgumentsHost,
-	Catch,
 	ExceptionFilter,
-	HttpException,
-	HttpStatus,
+	Catch,
+	ArgumentsHost,
+	BadRequestException,
 } from "@nestjs/common";
-import { FastifyReply, FastifyRequest } from "fastify";
-import { Responses } from "@helpers/responses.helper";
+import { ValidationError } from "class-validator";
+import type { Response, Request } from "express";
 
-@Catch()
-export class GlobalExceptionFilter implements ExceptionFilter {
-	catch(exception: any, host: ArgumentsHost) {
+/**
+ * Exception filter for handling validation errors.
+ */
+@Catch(BadRequestException)
+export class ValidationExceptionFilter implements ExceptionFilter {
+	/**
+	 * Catches and processes validation exceptions.
+	 *
+	 * @param {BadRequestException} exception - The exception thrown.
+	 * @param {ArgumentsHost} host - The arguments host providing execution context.
+	 */
+	catch(exception: BadRequestException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
-		const response = ctx.getResponse<FastifyReply>();
-		const request = ctx.getRequest<FastifyRequest>();
+		const status = exception.getStatus();
 
-		const path = request.url;
-		const method = request.method;
+		const exceptionResponse = exception.getResponse() as {
+			message: ValidationError[];
+		};
 
-		const status =
-			exception instanceof HttpException
-				? exception.getStatus()
-				: HttpStatus.INTERNAL_SERVER_ERROR;
+		const res = ctx.getResponse<Response>();
 
-		const message =
-			exception instanceof HttpException
-				? (exception.getResponse() as any).message || exception.message
-				: "An unexpected error occurred";
+		if (status == 400) {
+			res.status(status).json({
+				status: status,
+				success: false,
+				error: "Invalid credentials",
+				fieldsErrors: exceptionResponse.message,
+			});
+		} else {
+			res.status(status).json({
+				status: status,
+				success: false,
+				error: "An error occurred - Validation Dto",
+			});
+		}
 
-		// Utilisation de Responses.getResponse pour formater la réponse
-		const formattedResponse = Responses.getResponse({
-			path,
-			method,
-			code: status,
-			subject: "Validation Error",
-			error: message,
-		});
-
-		// Envoie explicitement la réponse avec Fastify
-		response.status(status).send(formattedResponse);
+		console.error("[ERROR_DATAS] :", exception.getResponse());
 	}
 }

@@ -7,7 +7,7 @@ import {
 	Organization,
 	OrganizationDocument,
 } from "@modules/organizations/entities/organization.entity";
-import { AppService } from "src/app.service";
+import { AppService } from "@src/app.service";
 
 @Injectable()
 export class OrganizationsService extends AppService<

@@ -1,7 +1,7 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { UserRoleEnum } from "@enums/user-role.enum";
 import { UserStatusEnum } from "@enums/user-status.enum";
+import { UserTypeEnum } from "@enums/user-type.enum";
 
 export type UserDocument = User & Document;
 
@@ -12,20 +12,23 @@ export class User {
 	@Prop({ required: true, unique: true })
 	email: string;
 
-	@Prop({ required: false, unique: true, sparse: true })
-	phone?: string;
+	@Prop({ required: false })
+	lastName?: string;
 
-	@Prop({ required: true, select: false })
-	password: string;
+	@Prop({ required: false })
+	firstName?: string;
 
-	@Prop({ type: Array, default: UserRoleEnum.CLIENT, enum: UserRoleEnum })
-	role: UserRoleEnum;
+	@Prop({ required: false, select: false })
+	password?: string;
 
-	@Prop({ required: true, default: true })
-	isActive: boolean;
+	@Prop({ type: Array, default: UserTypeEnum.CLIENT, enum: UserTypeEnum })
+	userType: UserTypeEnum;
 
-	@Prop({ required: true, default: false })
-	isVerified: boolean;
+	@Prop({ required: false, default: true })
+	isActive?: boolean;
+
+	@Prop({ required: false, default: false })
+	isVerified?: boolean;
 
 	@Prop()
 	lastConnection?: Date;
@@ -35,10 +38,13 @@ export class User {
 		enum: UserStatusEnum,
 		default: UserStatusEnum.AVAILABLE,
 	})
-	status: UserStatusEnum;
+	status?: UserStatusEnum;
 
-	createdAt: Date;
-	updatedAt: Date;
+	@Prop()
+	googleId?: string;
+
+	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

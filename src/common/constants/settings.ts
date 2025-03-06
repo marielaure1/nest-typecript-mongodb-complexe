@@ -1,6 +1,6 @@
-import * as dotenv from "dotenv";
-dotenv.config();
+import { configService } from "@constants/env";
+import { NodeEnvEnum } from "@enums/configs/node-env.enum";
 
 export const settings = {
-	...process.env,
+	isProd: configService.get<string>("API_PORT") === NodeEnvEnum.PROD,
 };

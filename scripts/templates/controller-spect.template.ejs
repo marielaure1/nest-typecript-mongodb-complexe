@@ -3,7 +3,7 @@ import { <%= pascalCase %>sController } from "@modules/<%= kebabCase %>s/<%= keb
 import { <%= pascalCase %>sService } from "@modules/<%= kebabCase %>s/<%= kebabCase %>s.service";<% } %><% if (moduleDto) { %>
 import { Create<%= pascalCase %>Dto } from "@modules/<%= kebabCase %>s/dto/create-<%= kebabCase %>.dto";
 import { Update<%= pascalCase %>Dto } from "@modules/<%= kebabCase %>s/dto/update-<%= kebabCase %>.dto";<% } %>
-import { Response } from "express";
+import type { Response, Request } from "express";
 import { ValidationError } from "class-validator";
 
 describe("<%= pascalCase %>sController", () => {
@@ -36,8 +36,8 @@ describe("<%= pascalCase %>sController", () => {
 
 	function mockResponse(): Partial<Response> {
 		const res: Partial<Response> = {
-			status: jest.fn().mockReturnThis(),
-			json: jest.fn().mockReturnThis(),
+			code: jest.fn().mockReturnThis(),
+			send: jest.fn().mockReturnThis(),
 		};
 		return res;
 	}
@@ -81,7 +81,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.create(dto, res);
 
-		expect(res.status).toHaveBeenCalledWith(201);
+		expect(res.code).toHaveBeenCalledWith(201);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 201,
 			datas: { <%= camelCase %>s: { _id: "1", ...dto } },
@@ -104,7 +104,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.create(dto, res);
 
-		expect(res.status).toHaveBeenCalledWith(422);
+		expect(res.code).toHaveBeenCalledWith(422);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 422,
 			datas: { <%= camelCase %>s: [validationError] },
@@ -125,7 +125,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.create(dto, res);
 
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.code).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
 			datas: { <%= camelCase %>s: "Internal server error" },
@@ -143,7 +143,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.findAll(res);
 
-		expect(res.status).toHaveBeenCalledWith(200);
+		expect(res.code).toHaveBeenCalledWith(200);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 200,
 			datas: { <%= camelCase %>s: [mock<%= pascalCase %>] },
@@ -160,7 +160,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.findAll(res);
 
-		expect(res.status).toHaveBeenCalledWith(404);
+		expect(res.code).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 404,
 			datas: { <%= camelCase %>s: "Not Found" },
@@ -179,7 +179,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.findAll(res);
 
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.code).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
 			datas: { <%= camelCase %>s: "Internal server error" },
@@ -197,7 +197,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.findOne("1", res);
 
-		expect(res.status).toHaveBeenCalledWith(200);
+		expect(res.code).toHaveBeenCalledWith(200);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 200,
 			datas: { <%= camelCase %>s: { _id: "1", ...mock<%= pascalCase %> } },
@@ -214,7 +214,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.findOne("1", res);
 
-		expect(res.status).toHaveBeenCalledWith(404);
+		expect(res.code).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 404,
 			datas: { <%= camelCase %>s: "Not Found" },
@@ -233,7 +233,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.findOne("1", res);
 
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.code).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
 			datas: { <%= camelCase %>s: "Internal server error" },
@@ -255,7 +255,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.update("1", dto, res);
 
-		expect(res.status).toHaveBeenCalledWith(404);
+		expect(res.code).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 404,
 			datas: { <%= camelCase %>s: "Not Found" },
@@ -276,7 +276,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.update("1", dto, res);
 
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.code).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
 			datas: { <%= camelCase %>s: "Internal server error" },
@@ -301,7 +301,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.update("1", dto, res);
 
-		expect(res.status).toHaveBeenCalledWith(422);
+		expect(res.code).toHaveBeenCalledWith(422);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 422,
 			datas: { <%= camelCase %>s: [validationError] },
@@ -319,7 +319,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.remove("1", res);
 
-		expect(res.status).toHaveBeenCalledWith(200);
+		expect(res.code).toHaveBeenCalledWith(200);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 200,
 			datas: { <%= camelCase %>s: { removed: true } },
@@ -336,7 +336,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.remove("1", res);
 
-		expect(res.status).toHaveBeenCalledWith(404);
+		expect(res.code).toHaveBeenCalledWith(404);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 404,
 			datas: { <%= camelCase %>s: {} },
@@ -355,7 +355,7 @@ describe("<%= pascalCase %>sController", () => {
 
 		await controller.remove("1", res);
 
-		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.code).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			code: 500,
 			datas: { <%= camelCase %>s: "Internal server error" },

@@ -7,7 +7,7 @@ import {
 	PromoCode,
 	PromoCodeDocument,
 } from "@modules/promo-codes/entities/promo-code.entity";
-import { AppService } from "src/app.service";
+import { AppService } from "@src/app.service";
 
 @Injectable()
 export class PromoCodesService extends AppService<

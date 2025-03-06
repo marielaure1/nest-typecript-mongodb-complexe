@@ -8,13 +8,15 @@ import {
 	Res,
 	HttpStatus,
 	Put,
+	Req,
+	Ip,
 } from "@nestjs/common";
 import { ClientsService } from "@modules/clients/clients.service";
 import { CreateClientDto } from "@modules/clients/dto/create-client.dto";
 import { UpdateClientDto } from "@modules/clients/dto/update-client.dto";
-import { AppController } from "src/app.controller";
+import { AppController } from "@src/app.controller";
 import { ClientDocument } from "@modules/clients/entities/client.entity";
-import { FastifyReply } from "fastify";
+import type { Response, Request } from "express";
 import {
 	ApiTags,
 	ApiOperation,
@@ -23,15 +25,40 @@ import {
 } from "@nestjs/swagger";
 
 import { Connection } from "mongoose";
-import { Responses } from "@helpers/responses.helper";
 
 @ApiTags("clients")
 @Controller("clients")
-export class ClientsController {
+export class ClientsController extends AppController<
+	ClientDocument,
+	CreateClientDto,
+	UpdateClientDto
+> {
 	constructor(
 		private readonly clientsService: ClientsService,
-		private readonly connection: Connection,
-	) {}
+		connection: Connection,
+	) {
+		super(clientsService, "clients", connection);
+	}
+
+	@ApiOperation({ summary: "Create a new client" })
+	@ApiResponse({
+		status: HttpStatus.CREATED,
+		description: "The client has been successfully created.",
+	})
+	@ApiResponse({
+		status: HttpStatus.BAD_REQUEST,
+		description: "Bad Request.",
+	})
+	@ApiBearerAuth()
+	@Post()
+	async create(
+		@Body() createClientDto: CreateClientDto,
+		@Res() res: Response,
+		@Req() req: Request,
+		@Ip() ip: string,
+	) {
+		return super.create(createClientDto, res, req, ip);
+	}
 
 	@ApiOperation({ summary: "Get all clients" })
 	@ApiResponse({ status: HttpStatus.OK, description: "Return all clients." })
@@ -41,41 +68,8 @@ export class ClientsController {
 	})
 	@ApiBearerAuth()
 	@Get()
-	async findAll(@Res() res: FastifyReply) {
-		const path = "findAll";
-		const method = "Get";
-
-		console.log("findAll");
-
-		try {
-			const clients = await this.clientsService.findAllWithUsers({
-				firstName: "Client 14",
-				"user.role": "CLIENT",
-			});
-
-			return Responses.getResponse({
-				res,
-				path,
-				method,
-				code: HttpStatus.OK,
-				subject: "clients",
-				multiple: true,
-				data: {
-					clients: clients,
-				},
-			});
-		} catch (error) {
-			console.error(`ClientsController > ${path} : `, error);
-
-			return Responses.getResponse({
-				res,
-				path,
-				method,
-				code: HttpStatus.INTERNAL_SERVER_ERROR,
-				subject: "clients",
-				error: "An error occurred while retrieving clients with users",
-			});
-		}
+	async findAll(@Res() res: Response, @Req() req: Request, @Ip() ip: string) {
+		return super.findAll(res, req, ip);
 	}
 
 	@ApiOperation({ summary: "Get a client by id" })
@@ -86,8 +80,13 @@ export class ClientsController {
 	})
 	@ApiBearerAuth()
 	@Get(":id")
-	async findOne(@Param("id") id: string, @Res() res: FastifyReply) {
-		// return super.findOne(id, res);
+	async findOne(
+		@Param("id") id: string,
+		@Res() res: Response,
+		@Req() req: Request,
+		@Ip() ip: string,
+	) {
+		return super.findOne(id, res, req, ip);
 	}
 
 	@ApiOperation({ summary: "Update a client by id" })
@@ -104,11 +103,11 @@ export class ClientsController {
 	async update(
 		@Param("id") id: string,
 		@Body() updateClientDto: UpdateClientDto,
-		@Res() res: FastifyReply,
+		@Res() res: Response,
+		@Req() req: Request,
+		@Ip() ip,
 	) {
-		console.log("update");
-
-		// return super.update(id, updateClientDto, res);
+		return super.update(id, updateClientDto, res, req, ip);
 	}
 
 	@ApiOperation({ summary: "Delete a client by id" })
@@ -122,8 +121,13 @@ export class ClientsController {
 	})
 	@ApiBearerAuth()
 	@Delete(":id")
-	async remove(@Param("id") id: string, @Res() res: FastifyReply) {
-		// return super.remove(id, res);
+	async remove(
+		@Param("id") id: string,
+		@Res() res: Response,
+		@Req() req: Request,
+		@Ip() ip: string,
+	) {
+		return super.remove(id, res, req, ip);
 	}
 
 	// @ApiOperation({ summary: "Get all company clients" })
@@ -137,7 +141,7 @@ export class ClientsController {
 	// })
 	// @Ownership()
 	// @Get("me/all")
-	// async findAllOwner(@Res() res: FastifyReply, @Req() req: FastifyRequest) {
+	// async findAllOwner(@Res() res: Response, @Req() req: Request) {
 	// 	const user = req["user"];
 	// 	const client = req["client"];
 	// 	let path = "findAllOwner";
@@ -159,7 +163,7 @@ export class ClientsController {
 	// 			subject: "clients",
 	// 			data,
 	// 		});
-	// 	} catch (error) {
+	// 	} catch (error: any) {
 	// 		console.error(
 	// 			`${"clients".toUpperCase()}Controller > ${path} : `,
 	// 			error,

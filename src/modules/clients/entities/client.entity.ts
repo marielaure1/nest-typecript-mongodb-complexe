@@ -10,12 +10,6 @@ export class Client {
 	@Prop({ required: true, unique: true })
 	userId: string;
 
-	@Prop({ required: true })
-	lastName: string;
-
-	@Prop({ required: true })
-	firstName: string;
-
 	@Prop({ default: null })
 	address1?: string;
 
@@ -31,11 +25,14 @@ export class Client {
 	@Prop({ default: null })
 	country?: string;
 
-	@Prop()
-	notificationEmail: boolean;
+	@Prop({ required: false, unique: true, sparse: true })
+	phone?: string;
 
-	@Prop()
-	notificationSms: boolean;
+	@Prop({ default: true })
+	notificationEmail?: boolean;
+
+	@Prop({ default: false })
+	notificationSms?: boolean;
 
 	// @Prop()
 	// customFieldValues?: Array<object>;

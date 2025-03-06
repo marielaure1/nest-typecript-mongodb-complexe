@@ -7,10 +7,16 @@ export type TeamDocument = Team & Document;
 	timestamps: true,
 })
 export class Team {
-	// PROPERTIES
+	@Prop({ required: true })
+	userId: string;
+
+	@Prop({ required: true })
+	establishmentId: string;
 
 	createdAt?: Date;
 	updatedAt?: Date;
 }
 
 export const TeamSchema = SchemaFactory.createForClass(Team);
+
+TeamSchema.index({ userId: 1, establishmentId: 1 }, { unique: true });

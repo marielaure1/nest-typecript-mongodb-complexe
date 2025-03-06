@@ -2,20 +2,16 @@ import { Module, MiddlewareConsumer } from "@nestjs/common";
 import { AuthMiddleware } from "@middlewares/auth.middleware";
 import { PlansController } from "@modules/plans/plans.controller";
 import { PlansService } from "@modules/plans/plans.service";
-
-import { StripeProductService } from "@providers/stripe/product/stripe-product.service";
+import { PlanOptionFeaturesService } from "@modules/plan-option-features/plan-option-features.service";
 
 @Module({
 	imports: [],
 	controllers: [PlansController],
-	providers: [
-		PlansService,
-		StripeProductService,
-	],
+	providers: [PlansService, PlanOptionFeaturesService],
 	exports: [PlansService],
 })
 export class PlansModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(AuthMiddleware).forRoutes(PlansController);
-	}
+	// configure(consumer: MiddlewareConsumer) {
+	// 	consumer.apply(AuthMiddleware).forRoutes(PlansController);
+	// }
 }

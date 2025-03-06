@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsString, IsOptional, IsEmpty } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { OrganizationStatusEnum } from "@enums/companies/organization-status.enum";
 
 export class CreateOrganizationDto {
 	@ApiProperty({
@@ -58,6 +59,14 @@ export class CreateOrganizationDto {
 	@IsString()
 	city?: string;
 
+	@IsOptional()
+	@IsString()
+	email?: string;
+
+	@IsOptional()
+	@IsString()
+	phone?: string;
+
 	@ApiPropertyOptional({
 		description: "The country of the organization",
 		example: "USA",
@@ -66,11 +75,18 @@ export class CreateOrganizationDto {
 	@IsString()
 	country?: string;
 
-	@IsOptional()
 	@IsString()
-	stripePlanId?: string;
+	taxId: string;
 
-	@IsOptional()
 	@IsString()
-	managerId?: string;
+	siren: string;
+
+	@IsEmpty()
+	ownerId: string;
+
+	@IsEmpty()
+	isVerified: boolean;
+
+	@IsEmpty()
+	verificationStatus: OrganizationStatusEnum;
 }

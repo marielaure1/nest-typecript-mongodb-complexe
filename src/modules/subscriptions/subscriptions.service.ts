@@ -7,7 +7,7 @@ import {
 	Subscription,
 	SubscriptionDocument,
 } from "@modules/subscriptions/entities/subscription.entity";
-import { AppService } from "src/app.service";
+import { AppService } from "@src/app.service";
 
 @Injectable()
 export class SubscriptionsService extends AppService<

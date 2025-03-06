@@ -7,8 +7,6 @@ export type SubscriptionDocument = Subscription & Document;
 	timestamps: true,
 })
 export class Subscription {
-	// PROPERTIES
-
 	createdAt?: Date;
 	updatedAt?: Date;
 }

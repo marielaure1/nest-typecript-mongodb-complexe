@@ -3,7 +3,7 @@ import { EmployeesService } from "@modules/employees/employees.service";
 import { CreateEmployeeDto } from "@modules/employees/dto/create-employee.dto";
 import { UpdateEmployeeDto } from "@modules/employees/dto/update-employee.dto";
 import { EmployeeDocument } from "@modules/employees/entities/employee.entity";
-import { AppController } from "src/app.controller";
+import { AppController } from "@src/app.controller";
 import { ApiTags } from "@nestjs/swagger";
 import { Connection } from "mongoose";
 

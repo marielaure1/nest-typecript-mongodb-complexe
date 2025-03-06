@@ -1,5 +1,12 @@
-import { IsNotEmpty, IsString, IsBoolean, IsOptional } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import {
+	IsNotEmpty,
+	IsString,
+	IsBoolean,
+	IsOptional,
+	Matches,
+} from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { regex } from "@constants/regex";
 
 export class CreateEmployeeDto {
 	@ApiProperty({
@@ -10,21 +17,13 @@ export class CreateEmployeeDto {
 	@IsString()
 	userId: string;
 
-	@ApiProperty({
-		description: "The last name of the employee",
-		example: "Doe",
+	@ApiPropertyOptional({
+		description: "The phone number of the user",
+		example: "+1234567890",
 	})
-	@IsNotEmpty()
-	@IsString()
-	lastName: string;
-
-	@ApiProperty({
-		description: "The first name of the employee",
-		example: "John",
-	})
-	@IsNotEmpty()
-	@IsString()
-	firstName: string;
+	@IsOptional()
+	@Matches(regex.phone)
+	phone?: string;
 
 	@ApiProperty({
 		description: "Indicates if the employee wants email notifications",

@@ -1,5 +1,6 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
+import { PermissionCategoriesEnum } from "@enums/users/permission-categories.enum";
 
 export type PermissionDocument = Permission & Document;
 
@@ -8,25 +9,16 @@ export type PermissionDocument = Permission & Document;
 })
 export class Permission {
 	@Prop({ required: true })
-	permissionCategorieId: string;
+	name: string;
 
-	@Prop({ required: true })
-	title: string;
+	@Prop({ default: null })
+	description?: string;
 
-	@Prop({ required: true })
-	description: string;
-
-	@Prop({ required: true })
+	@Prop({ required: true, unique: true })
 	code: string;
 
-	@Prop({ required: true, default: false })
-	client: string;
-
-	@Prop({ required: true, default: false })
-	organization: string;
-
-	@Prop({ required: true, default: false })
-	booker: string;
+	@Prop({ required: true, type: String, enum: PermissionCategoriesEnum })
+	category: PermissionCategoriesEnum;
 
 	createdAt?: Date;
 	updatedAt?: Date;

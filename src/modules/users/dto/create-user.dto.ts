@@ -8,53 +8,36 @@ import {
 	Matches,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import Regex from "@constants/regex";
+import { regex } from "@constants/regex";
 import { UserStatusEnum } from "@enums/user-status.enum";
-import { UserRoleEnum } from "@enums/user-role.enum";
+import { UserTypeEnum } from "@enums/user-type.enum";
 
 export class CreateUserDto {
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The email of the user",
 		example: "user@example.com",
 	})
-	@IsNotEmpty()
-	@Matches(Regex.email)
-	email: string;
-
-	@ApiProperty({
-		description: "The phone number of the user",
-		example: "+1234567890",
-	})
 	@IsOptional()
-	@Matches(Regex.phone)
-	phone?: string;
+	@Matches(regex.email)
+	email?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "The password of the user",
 		example: "Password123!",
 	})
-	@IsNotEmpty()
-	@Matches(Regex.password)
-	password: string;
-
-	@ApiPropertyOptional({
-		description: "The role of the user",
-		enum: UserRoleEnum,
-		example: UserRoleEnum.CLIENT,
-	})
 	@IsOptional()
-	@IsEnum(UserRoleEnum)
-	role?: UserRoleEnum;
+	@Matches(regex.password)
+	password?: string;
 
-	@ApiProperty({
-		description: "Indicates whether the user is active",
-		example: true,
-	})
+	@IsOptional()
+	@IsEnum(UserTypeEnum)
+	userType?: UserTypeEnum;
+
 	@IsOptional()
 	@IsBoolean()
 	isActive?: boolean;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: "Indicates whether the user is verified",
 		example: false,
 	})
@@ -62,20 +45,27 @@ export class CreateUserDto {
 	@IsBoolean()
 	isVerified?: boolean;
 
-	@ApiPropertyOptional({
-		description: "The last connection date of the user",
-		example: "2024-01-01T00:00:00.000Z",
-	})
 	@IsOptional()
 	@IsString()
 	lastConnection?: Date;
 
-	@ApiPropertyOptional({
-		description: "The status of the user",
-		enum: UserStatusEnum,
-		example: UserStatusEnum.AVAILABLE,
-	})
 	@IsOptional()
 	@IsEnum(UserStatusEnum)
 	status?: UserStatusEnum;
+
+	@IsOptional()
+	@IsString()
+	googleId?: string;
+
+	@IsString()
+	@IsOptional()
+	googleAccessToken?: string;
+
+	@IsString()
+	@IsOptional()
+	firstName?: string;
+
+	@IsString()
+	@IsOptional()
+	lastName?: string;
 }

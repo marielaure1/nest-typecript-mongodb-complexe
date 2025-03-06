@@ -1,36 +1,39 @@
-import {
-	IsNotEmpty,
-	IsOptional
-} from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { PermissionCategoriesEnum } from "@enums/users/permission-categories.enum";
 
 export class CreatePermissionDto {
-	@ApiProperty()
+	@ApiProperty({
+		description: "The name of the permission",
+		example: "Create User",
+	})
+	@IsString()
 	@IsNotEmpty()
-	title: string;
+	name: string;
 
-	@ApiProperty()
-	@IsNotEmpty()
-	description: string;
+	@ApiPropertyOptional({
+		description: "The description of the permission",
+		example: "Allows the user to create a new user",
+	})
+	@IsOptional()
+	@IsString()
+	description?: string;
 
-	@ApiProperty()
-	@IsNotEmpty()
-	category: string;
-
-	@ApiProperty()
+	@ApiProperty({
+		description: "The code of the permission",
+		example: "create-user",
+	})
+	@IsString()
 	@IsNotEmpty()
 	code: string;
 
-	@ApiPropertyOptional()
-	@IsOptional()
-	client: string;
-
-	@ApiPropertyOptional()
-	@IsOptional()
-	organization: string;
-
-	@ApiPropertyOptional()
-	@IsOptional()
-	booker: string;
+	@ApiProperty({
+		description: "The category of the permission",
+		example: "users",
+		enum: PermissionCategoriesEnum,
+	})
+	@IsEnum(PermissionCategoriesEnum)
+	@IsNotEmpty()
+	category: PermissionCategoriesEnum;
 }

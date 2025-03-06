@@ -1,13 +1,15 @@
-import { UserRoleEnum } from "@enums/user-role.enum";
+import { UserTypeEnum } from "@enums/user-type.enum";
 
 export class UserHelper {
-	public static getUserType(role: UserRoleEnum): string {
-		if (role.startsWith("ORGANIZATION_")) {
-			return "Employee";
-		} else if (role.startsWith("BOOKER_")) {
-			return "BookerEmployee";
+	public static getUserTypeString(userType: UserTypeEnum): string {
+		if (userType == UserTypeEnum.CLIENT) {
+			return "client";
+		} else if (userType == UserTypeEnum.EMPLOYEE) {
+			return "employee";
+		} else if (userType == UserTypeEnum.STAFF) {
+			return "staff";
 		}
 
-		return "Client";
+		return "";
 	}
 }

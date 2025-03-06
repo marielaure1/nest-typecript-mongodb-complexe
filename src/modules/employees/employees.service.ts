@@ -7,7 +7,7 @@ import {
 	Employee,
 	EmployeeDocument,
 } from "@modules/employees/entities/employee.entity";
-import { AppService } from "src/app.service";
+import { AppService } from "@src/app.service";
 
 @Injectable()
 export class EmployeesService extends AppService<

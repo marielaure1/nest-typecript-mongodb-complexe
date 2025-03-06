@@ -7,12 +7,27 @@ import {
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { LogsHelper } from "@modules/logs/helpers/logs.helper";
-import { LogLevelEnum } from "@modules/logs/enums/log-level.enum";
 
+/**
+ * Interceptor for logging HTTP requests and responses.
+ * Captures request details, response times, and logs both successful and failed requests.
+ */
 @Injectable()
 export class LogInterceptor implements NestInterceptor {
+	/**
+	 * Creates an instance of LogInterceptor.
+	 *
+	 * @param {LogsHelper} logsHelper - The helper service for logging request details.
+	 */
 	constructor(private readonly logsHelper: LogsHelper) {}
 
+	/**
+	 * Intercepts incoming requests and logs request and response details.
+	 *
+	 * @param {ExecutionContext} context - The execution context containing the request and response.
+	 * @param {CallHandler} next - The handler for processing the request.
+	 * @returns {Observable<any>} - The observable stream of the request handling process.
+	 */
 	intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		const request = context.switchToHttp().getRequest();
 		const response = context.switchToHttp().getResponse();
@@ -32,6 +47,7 @@ export class LogInterceptor implements NestInterceptor {
 					// Log successful requests
 					const responseTime = Date.now() - start;
 					this.logsHelper.logInfo({
+						req: request,
 						ip,
 						userId,
 						email,
@@ -49,6 +65,7 @@ export class LogInterceptor implements NestInterceptor {
 					// Log errors
 					const responseTime = Date.now() - start;
 					this.logsHelper.logError({
+						req: request,
 						ip,
 						userId,
 						email,

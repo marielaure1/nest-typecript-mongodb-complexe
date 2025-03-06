@@ -5,15 +5,10 @@ import { SubscriptionsService } from "@modules/subscriptions/subscriptions.servi
 import { MailService } from "@providers/mail/mail.service";
 import { MailHelper } from "@providers/mail/helpers/mail.helper";
 
-
 @Module({
 	imports: [],
 	controllers: [SubscriptionsController],
-	providers: [
-		SubscriptionsService,
-		MailService,
-		MailHelper,
-	],
+	providers: [SubscriptionsService, MailService, MailHelper],
 	exports: [],
 })
 export class SubscriptionsModule {
